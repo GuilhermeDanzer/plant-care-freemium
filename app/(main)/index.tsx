@@ -1,7 +1,8 @@
 import { useRouter } from "expo-router";
 import { type ComponentType, useEffect, useState } from "react";
-import { Sprout } from "lucide-react-native";
+import { LogIn, Sprout, UserCircle2 } from "lucide-react-native";
 import {
+  Alert,
   FlatList,
   StyleSheet,
   Text,
@@ -16,9 +17,12 @@ import { PremiumBanner } from "../../src/components/PremiumBanner";
 import { usePlantStore } from "../../src/store/usePlantStore";
 import { PlantRecord } from "../../src/types/plant";
 import { FREE_PLANT_LIMIT } from "../../src/utils/constants";
+import { shadowLayering } from "../../src/utils/shadows";
 import { showInfoToast, showSuccessToast } from "../../src/utils/showToasts";
 
 const SproutIcon = Sprout as unknown as ComponentType<{ color?: string; size?: number }>;
+const LogInIcon = LogIn as unknown as ComponentType<{ color?: string; size?: number }>;
+const UserIcon = UserCircle2 as unknown as ComponentType<{ color?: string; size?: number }>;
 
 export default function MainIndexRoute() {
   const router = useRouter();
@@ -28,6 +32,9 @@ export default function MainIndexRoute() {
   const hasLoaded = usePlantStore((s) => s.hasLoaded);
   const deletePlant = usePlantStore((s) => s.deletePlant);
   const isPremium = usePlantStore((s) => s.isPremium);
+  const user = usePlantStore((s) => s.user);
+  const isAuthenticated = usePlantStore((s) => s.isAuthenticated);
+  const signOut = usePlantStore((s) => s.signOut);
 
   const [isEditing, setIsEditing] = useState(false);
   const atFreeLimit = !isPremium && plants.length >= FREE_PLANT_LIMIT;
@@ -55,6 +62,30 @@ export default function MainIndexRoute() {
     router.push("/(identify)/identify");
   };
 
+  const handleAuthPress = () => {
+    if (isAuthenticated) {
+      Alert.alert(
+        "Encerrar sessão",
+        user?.email
+          ? `Deslogar de ${user.email}?`
+          : "Você quer sair da sua conta?",
+        [
+          { text: "Cancelar", style: "cancel" },
+          {
+            text: "Sair",
+            style: "destructive",
+            onPress: async () => {
+              await signOut();
+              showInfoToast("Sessão encerrada");
+            },
+          },
+        ]
+      );
+      return;
+    }
+    router.push("/auth");
+  };
+
   const renderItem = ({ item }: ListRenderItemInfo<PlantRecord>) => (
     <PlantCard
       plant={item}
@@ -73,17 +104,37 @@ export default function MainIndexRoute() {
               Minhas plantinhas
             </Text>
             <Text className="mt-2 text-sm text-slate-500">
-              Acompanhe as regas e cuide da sua selva particular.
+              {isAuthenticated && user?.email
+                ? `Conectado como ${user.email}`
+                : "Acompanhe as regas e cuide da sua selva particular."}
             </Text>
           </View>
 
-          {plants.length > 0 ? (
-            <TouchableOpacity onPress={() => setIsEditing((current) => !current)}>
-              <Text className="text-sm font-semibold text-emerald-700">
-                {isEditing ? "Concluir" : "Editar"}
-              </Text>
+          <View className="items-end">
+            <TouchableOpacity
+              onPress={handleAuthPress}
+              className="h-10 w-10 items-center justify-center rounded-full bg-white"
+              style={shadowLayering.core}
+              accessibilityLabel={isAuthenticated ? "Sair da conta" : "Entrar"}
+            >
+              {isAuthenticated ? (
+                <UserIcon color="#047857" size={20} />
+              ) : (
+                <LogInIcon color="#0f172a" size={18} />
+              )}
             </TouchableOpacity>
-          ) : null}
+
+            {plants.length > 0 ? (
+              <TouchableOpacity
+                onPress={() => setIsEditing((current) => !current)}
+                className="mt-3"
+              >
+                <Text className="text-sm font-semibold text-emerald-700">
+                  {isEditing ? "Concluir" : "Editar"}
+                </Text>
+              </TouchableOpacity>
+            ) : null}
+          </View>
         </View>
 
         {!isPremium ? (

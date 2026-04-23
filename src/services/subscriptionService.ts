@@ -1,19 +1,17 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import Purchases, {
+  type CustomerInfo,
+  PURCHASES_ERROR_CODE,
+  type PurchasesError,
+} from "react-native-purchases";
 
 /**
- * MOCK de Monetização.
- * Persiste o estado Premium em AsyncStorage para que sobreviva ao refresh do
- * app enquanto o RevenueCat / Stripe não está conectado.
- *
- * TODO: Substituir por RevenueCat (Purchases SDK) quando a conta estiver
- * configurada.
+ * RevenueCat é a fonte única da verdade do status Premium.
+ * Este serviço encapsula o SDK e devolve um `SubscriptionStatus` estável
+ * pro Zustand/UI — a interface pública é idêntica à do mock anterior para
+ * preservar os consumidores (store, PaywallModal).
  */
 
-export const PREMIUM_STORAGE_KEY = "@planthelper:isPremium";
 export const PREMIUM_ENTITLEMENT_ID = "PlantHelper Pro";
-
-const simulateLatency = (ms = 500): Promise<void> =>
-  new Promise((resolve) => setTimeout(resolve, ms));
 
 export interface SubscriptionStatus {
   isActive: boolean;
@@ -21,68 +19,82 @@ export interface SubscriptionStatus {
   expiresAt: string | null;
 }
 
-const readStoredFlag = async (): Promise<boolean> => {
-  try {
-    const raw = await AsyncStorage.getItem(PREMIUM_STORAGE_KEY);
-    return raw === "true";
-  } catch (error) {
-    console.warn("[subscriptionService] Falha ao ler storage.", error);
-    return false;
-  }
+export const INACTIVE_STATUS: SubscriptionStatus = {
+  isActive: false,
+  productId: null,
+  expiresAt: null,
 };
 
-const writeStoredFlag = async (value: boolean): Promise<void> => {
-  try {
-    await AsyncStorage.setItem(PREMIUM_STORAGE_KEY, value ? "true" : "false");
-  } catch (error) {
-    console.warn("[subscriptionService] Falha ao gravar storage.", error);
-  }
+const toStatus = (info: CustomerInfo): SubscriptionStatus => {
+  const entitlement = info.entitlements.active[PREMIUM_ENTITLEMENT_ID];
+  if (!entitlement) return INACTIVE_STATUS;
+  return {
+    isActive: true,
+    productId: entitlement.productIdentifier ?? null,
+    expiresAt: entitlement.expirationDate ?? null,
+  };
+};
+
+const isUserCancelledError = (error: unknown): boolean => {
+  const e = error as Partial<PurchasesError> | undefined;
+  if (!e) return false;
+  if (e.userCancelled === true) return true;
+  if (e.code === PURCHASES_ERROR_CODE.PURCHASE_CANCELLED_ERROR) return true;
+  return false;
 };
 
 export const subscriptionService = {
-  /**
-   * Lê o estado atual do "entitlement" a partir do AsyncStorage.
-   */
   checkSubscription: async (): Promise<SubscriptionStatus> => {
-    const isActive = await readStoredFlag();
-    return {
-      isActive,
-      productId: isActive ? PREMIUM_ENTITLEMENT_ID : null,
-      expiresAt: null,
-    };
+    try {
+      const info = await Purchases.getCustomerInfo();
+      return toStatus(info);
+    } catch (error) {
+      console.warn("[subscriptionService.checkSubscription]", error);
+      return INACTIVE_STATUS;
+    }
   },
 
   /**
-   * Mock do fluxo de compra. Simula latência e grava o flag Premium.
+   * Dispara a compra do pacote mensal da offering corrente.
+   * Cancelamento do usuário é tratado silenciosamente — devolvemos o status
+   * atual (sem throw), pro PaywallModal não piscar um toast de erro.
    */
   purchasePackage: async (): Promise<SubscriptionStatus> => {
-    await simulateLatency(700);
-    await writeStoredFlag(true);
-    return {
-      isActive: true,
-      productId: PREMIUM_ENTITLEMENT_ID,
-      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-    };
+    const offerings = await Purchases.getOfferings();
+    const current = offerings.current;
+    if (!current) {
+      throw new Error(
+        "Nenhuma offering ativa configurada no RevenueCat. Verifique o dashboard."
+      );
+    }
+
+    // Preferimos o slot mágico `monthly` ($rc_monthly). Caímos em fallbacks
+    // se o projeto usar identifiers customizados.
+    const pkg =
+      current.monthly ??
+      current.availablePackages.find((p) => p.identifier === "$rc_monthly") ??
+      current.availablePackages.find((p) => p.identifier === "Monthly");
+
+    if (!pkg) {
+      throw new Error(
+        "Nenhum package mensal encontrado na offering atual do RevenueCat."
+      );
+    }
+
+    try {
+      const { customerInfo } = await Purchases.purchasePackage(pkg);
+      return toStatus(customerInfo);
+    } catch (error) {
+      if (isUserCancelledError(error)) {
+        // Fluxo esperado — usuário fechou o sheet. Devolve o estado vigente.
+        return subscriptionService.checkSubscription();
+      }
+      throw error;
+    }
   },
 
-  /**
-   * Mock de restauração. Apenas relê o storage — em produção vai consultar
-   * o serviço do RevenueCat.
-   */
   restorePurchases: async (): Promise<SubscriptionStatus> => {
-    await simulateLatency(500);
-    const isActive = await readStoredFlag();
-    return {
-      isActive,
-      productId: isActive ? PREMIUM_ENTITLEMENT_ID : null,
-      expiresAt: null,
-    };
-  },
-
-  /**
-   * Utilitário para os testes/stores resetarem o estado.
-   */
-  resetMock: async (): Promise<void> => {
-    await writeStoredFlag(false);
+    const info = await Purchases.restorePurchases();
+    return toStatus(info);
   },
 };

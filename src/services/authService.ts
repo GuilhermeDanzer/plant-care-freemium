@@ -3,6 +3,7 @@ import type {
   Session,
   Subscription,
 } from "@supabase/supabase-js";
+import Purchases from "react-native-purchases";
 import { supabase } from "../lib/supabase";
 import { AppUser } from "../types/plant";
 
@@ -17,10 +18,18 @@ export interface SignUpInput extends SignInInput {
 
 /**
  * Normaliza o `User` do Supabase para o shape `AppUser` usado pelo Zustand.
- * Tudo que não for crítico para a UI é ignorado.
+ * `isAnonymous` reflete a claim do JWT — Guest usa `signInAnonymously`
+ * para garantir um UUID estável no RevenueCat desde o boot.
  */
 const toAppUser = (
-  user: { id: string; email?: string | null; user_metadata?: Record<string, unknown> } | null
+  user:
+    | {
+        id: string;
+        email?: string | null;
+        is_anonymous?: boolean;
+        user_metadata?: Record<string, unknown>;
+      }
+    | null
 ): AppUser | null => {
   if (!user) return null;
 
@@ -35,7 +44,28 @@ const toAppUser = (
     id: user.id,
     email: user.email ?? "",
     displayName,
+    isAnonymous: Boolean(user.is_anonymous),
   };
+};
+
+/**
+ * Identifica o usuário no RevenueCat. Falhas não devem bloquear o fluxo de
+ * autenticação — logamos e seguimos.
+ */
+const syncRevenueCatIdentity = async (userId: string): Promise<void> => {
+  try {
+    await Purchases.logIn(userId);
+  } catch (error) {
+    console.warn("[authService.syncRevenueCatIdentity]", error);
+  }
+};
+
+const clearRevenueCatIdentity = async (): Promise<void> => {
+  try {
+    await Purchases.logOut();
+  } catch (error) {
+    console.warn("[authService.clearRevenueCatIdentity]", error);
+  }
 };
 
 export const authService = {
@@ -51,13 +81,35 @@ export const authService = {
     return toAppUser(data.user);
   },
 
+  /**
+   * Cria um usuário anônimo no Supabase (`signInAnonymously`) e, em seguida,
+   * identifica-o no RevenueCat. Esse é o caminho Guest: o `user.id` gerado é
+   * um UUID estável que acompanha o dispositivo até o upgrade para conta
+   * permanente (ou o logout explícito).
+   *
+   * Pré-requisito: "Anonymous Sign-Ins" habilitado no dashboard
+   * (Authentication → Providers → Anonymous).
+   */
+  signInAnonymously: async (): Promise<AppUser | null> => {
+    const { data, error } = await supabase.auth.signInAnonymously();
+    if (error) {
+      console.warn("[authService.signInAnonymously]", error.message);
+      return null;
+    }
+    const appUser = toAppUser(data.user);
+    if (appUser) await syncRevenueCatIdentity(appUser.id);
+    return appUser;
+  },
+
   signIn: async ({ email, password }: SignInInput): Promise<AppUser | null> => {
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
     if (error) throw error;
-    return toAppUser(data.user);
+    const appUser = toAppUser(data.user);
+    if (appUser) await syncRevenueCatIdentity(appUser.id);
+    return appUser;
   },
 
   signUp: async ({
@@ -71,12 +123,15 @@ export const authService = {
       options: displayName ? { data: { displayName } } : undefined,
     });
     if (error) throw error;
-    return toAppUser(data.user);
+    const appUser = toAppUser(data.user);
+    if (appUser) await syncRevenueCatIdentity(appUser.id);
+    return appUser;
   },
 
   signOut: async (): Promise<void> => {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
+    await clearRevenueCatIdentity();
   },
 
   /**

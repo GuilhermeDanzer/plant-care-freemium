@@ -142,11 +142,17 @@ Body:
 
 ---
 
-## 5. Premium (mock)
+## 5. Premium (RevenueCat)
 
-- `src/services/subscriptionService.ts` → `checkSubscription` / `purchasePackage` / `restorePurchases` → leem e gravam `@planthelper:isPremium` no AsyncStorage.
-- Boot em `app/_layout.tsx` → `usePlantStore.getState().syncSubscription()`.
-- `PaywallModal.tsx` chama `purchasePackage()`; no sucesso chama `setPremium(true)` no store (grava também no AsyncStorage).
+Fonte única da verdade: **RevenueCat** (`react-native-purchases` v10). O mock em
+AsyncStorage foi removido.
+
+- `src/services/subscriptionService.ts` → `checkSubscription` (`Purchases.getCustomerInfo`), `purchasePackage` (`Purchases.getOfferings` + `Purchases.purchasePackage` do slot `monthly`/`$rc_monthly`), `restorePurchases` (`Purchases.restorePurchases`). Cancelamento do usuário (`userCancelled`) é tratado silenciosamente.
+- Entitlement ID esperado no dashboard: `"PlantHelper Pro"` (constante `PREMIUM_ENTITLEMENT_ID`).
+- `app/_layout.tsx` → `Purchases.configure({ apiKey })` no boot (chave por plataforma vinda de `EXPO_PUBLIC_REVENUECAT_APPLE_KEY` / `_GOOGLE_KEY`) e registra `addCustomerInfoUpdateListener` que chama `setPremium` no store a cada mudança (compra, renovação, refund, expiração, restore).
+- `usePlantStore.setPremium(value)` é um setter puro — só mexe no estado, nunca persiste localmente.
+- **Identidade**: `src/hooks/useAuth.ts` chama `signInAnonymously` no Supabase quando não há sessão, e repassa o `user.id` via `Purchases.logIn`. `authService.signIn/signUp` também chamam `Purchases.logIn` após sucesso; `signOut` chama `Purchases.logOut`. Isso garante UUID estável no RC desde o primeiro boot.
+- **Pré-requisitos**: (1) Anonymous Sign-Ins habilitado em Supabase → Auth → Providers; (2) produtos/offering/entitlement `"PlantHelper Pro"` configurados no dashboard RevenueCat; (3) build custom (Expo Dev Client + EAS) — o SDK tem código nativo e não roda em Expo Go em modo real (Expo Go cai em *Preview API Mode* automático).
 
 ---
 

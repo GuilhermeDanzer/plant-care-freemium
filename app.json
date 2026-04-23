@@ -14,7 +14,10 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.plantcarefreemium"
+      "bundleIdentifier": "com.danzer.planticare",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -32,6 +35,13 @@
       "expo-sqlite",
       "@react-native-community/datetimepicker",
       "expo-router"
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "7a64a446-bb25-4a83-8765-edab3500474a"
+      }
+    },
+    "owner": "danzer"
   }
 }

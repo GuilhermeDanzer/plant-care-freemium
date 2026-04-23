@@ -1,4 +1,3 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { create } from "zustand";
 import {
   countMyPlants,
@@ -11,11 +10,9 @@ import {
   updatePlantRecord,
   UpdatePlantInput,
 } from "../database/db";
+import { authService } from "../services/authService";
 import { plantService } from "../services/plantService";
-import {
-  PREMIUM_STORAGE_KEY,
-  subscriptionService,
-} from "../services/subscriptionService";
+import { subscriptionService } from "../services/subscriptionService";
 import { AppUser, HealthAssessmentResponse, PlantRecord } from "../types/plant";
 import { FREE_PLANT_LIMIT } from "../utils/constants";
 
@@ -38,10 +35,11 @@ interface PlantStoreState {
     imageUri: string
   ) => Promise<HealthAssessmentResponse | null>;
 
-  setPremium: (value: boolean) => Promise<void>;
+  setPremium: (value: boolean) => void;
   setUser: (user: AppUser | null) => void;
+  signOut: () => Promise<void>;
 
-  /** Lê o isPremium persistido e popula o estado. */
+  /** Lê o status atual do RevenueCat e hidrata `isPremium`. */
   syncSubscription: () => Promise<void>;
 
   /**
@@ -50,14 +48,6 @@ interface PlantStoreState {
    */
   syncDataWithSupabase: () => Promise<void>;
 }
-
-const persistPremiumFlag = async (value: boolean): Promise<void> => {
-  try {
-    await AsyncStorage.setItem(PREMIUM_STORAGE_KEY, value ? "true" : "false");
-  } catch (error) {
-    console.warn("[usePlantStore] Falha ao persistir Premium.", error);
-  }
-};
 
 export const usePlantStore = create<PlantStoreState>((set, get) => ({
   plants: [],
@@ -122,12 +112,23 @@ export const usePlantStore = create<PlantStoreState>((set, get) => ({
     }
   },
 
-  setPremium: async (value) => {
-    set({ isPremium: value });
-    await persistPremiumFlag(value);
-  },
+  // Setter puro. O RevenueCat é a fonte da verdade — o listener global em
+  // `app/_layout.tsx` chama este setter sempre que o CustomerInfo muda.
+  setPremium: (value) => set({ isPremium: value }),
 
   setUser: (user) => set({ user, isAuthenticated: Boolean(user) }),
+
+  signOut: async () => {
+    try {
+      await authService.signOut();
+    } catch (error) {
+      console.warn("[usePlantStore.signOut] Falha ao encerrar sessão.", error);
+    }
+    // O listener em useAuth (onAuthStateChange → SIGNED_OUT) também zera o
+    // user, mas limpamos aqui imediatamente para a UI reagir sem esperar.
+    // Premium também volta a false: sem sessão, não há entitlement ativo.
+    set({ user: null, isAuthenticated: false, isPremium: false });
+  },
 
   syncSubscription: async () => {
     const { isActive } = await subscriptionService.checkSubscription();

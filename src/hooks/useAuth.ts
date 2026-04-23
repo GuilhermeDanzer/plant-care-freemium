@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import Purchases from "react-native-purchases";
 import { authService } from "../services/authService";
 import { usePlantStore } from "../store/usePlantStore";
 import { AppUser } from "../types/plant";
@@ -10,15 +11,16 @@ export interface UseAuthResult {
 }
 
 /**
- * Sincroniza a sessão do Supabase com o Zustand.
+ * Sincroniza a sessão do Supabase com o Zustand e mantém a identidade do
+ * RevenueCat alinhada ao `user.id`.
  *
- * - Ao montar: lê a sessão atual via `authService.getCurrentUser()`.
- * - Em seguida: assina `supabase.auth.onAuthStateChange` via
- *   `authService.onAuthStateChange` e atualiza o store em SIGNED_IN,
- *   SIGNED_OUT, USER_UPDATED e TOKEN_REFRESHED.
+ * - Ao montar: lê a sessão atual. Se não houver nenhuma, dispara
+ *   `signInAnonymously()` para garantir um UUID estável no RevenueCat
+ *   desde o primeiro boot.
+ * - Em seguida: assina `onAuthStateChange` e reage a SIGNED_IN /
+ *   SIGNED_OUT / USER_UPDATED / TOKEN_REFRESHED.
  *
- * Monte este hook uma única vez (em `app/_layout.tsx`) para manter
- * o store em sincronia durante todo o ciclo de vida do app.
+ * Monte este hook uma única vez (em `app/_layout.tsx`).
  */
 export function useAuth(): UseAuthResult {
   const user = usePlantStore((s) => s.user);
@@ -33,7 +35,21 @@ export function useAuth(): UseAuthResult {
     (async () => {
       try {
         const current = await authService.getCurrentUser();
-        if (isMounted) setUser(current);
+        if (!isMounted) return;
+
+        if (current) {
+          setUser(current);
+          // Garante que o RC conhece este UUID, mesmo em boots subsequentes.
+          await Purchases.logIn(current.id).catch((e) =>
+            console.warn("[useAuth.logIn]", e)
+          );
+        } else {
+          // Sem sessão: cria um Guest anônimo no Supabase. O próprio
+          // `signInAnonymously` do authService já chama Purchases.logIn
+          // com o user.id recém-criado.
+          const anon = await authService.signInAnonymously();
+          if (isMounted && anon) setUser(anon);
+        }
       } catch (error) {
         console.warn("[useAuth] Falha ao hidratar sessão inicial.", error);
       } finally {
