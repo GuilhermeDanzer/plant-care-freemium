@@ -3,8 +3,11 @@ import DateTimePicker, {
 } from "@react-native-community/datetimepicker";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Platform, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import * as Notifications from "expo-notifications";
+import { Droplet } from "lucide-react-native";
 import { usePlantStore } from "../../src/store/usePlantStore";
 import { IdentifiedPlant } from "../../src/types/plant";
 import {
@@ -12,29 +15,41 @@ import {
   mapWateringLevelToDays,
 } from "../../src/utils/dateUtils";
 
-const fallbackPlant: IdentifiedPlant = {
-  name: "Planta Identificada",
-  scientificName: "N/A",
-  wateringLevel: 2,
-};
+// Configure notifications to show alert when app is in foreground
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+    shouldShowBanner: true,
+    shouldShowList: true,
+  }),
+});
 
-const parseIdentifiedPlant = (raw: string | string[] | undefined): IdentifiedPlant => {
-  if (!raw || Array.isArray(raw)) return fallbackPlant;
+const getFallbackPlant = (t: any): IdentifiedPlant => ({
+  name: t("identify.defaultPlantName"),
+  scientificName: t("identify.defaultScientificName"),
+  wateringLevel: 2,
+});
+
+const parseIdentifiedPlant = (raw: string | string[] | undefined, t: any): IdentifiedPlant => {
+  if (!raw || Array.isArray(raw)) return getFallbackPlant(t);
 
   try {
     return JSON.parse(raw) as IdentifiedPlant;
   } catch {
-    return fallbackPlant;
+    return getFallbackPlant(t);
   }
 };
 
 export default function SetupRoute() {
+  const { t } = useTranslation();
   const router = useRouter();
   const { identifiedPlant: rawIdentifiedPlant, imageUri } = useLocalSearchParams<{
     identifiedPlant?: string;
     imageUri?: string;
   }>();
-  const identifiedPlant = parseIdentifiedPlant(rawIdentifiedPlant);
+  const identifiedPlant = parseIdentifiedPlant(rawIdentifiedPlant, t);
   const [lastWateredAt, setLastWateredAt] = useState<Date>(new Date());
   const [showPicker, setShowPicker] = useState(false);
   const addPlant = usePlantStore((state) => state.addPlant);
@@ -50,6 +65,25 @@ export default function SetupRoute() {
     }
     if (event.type === "set" && selectedDate) {
       setLastWateredAt(selectedDate);
+    }
+  };
+
+  const scheduleWateringNotification = async (plantName: string, nextWateringDate: Date) => {
+    const { status } = await Notifications.requestPermissionsAsync();
+    if (status !== 'granted') return;
+
+    const secondsUntilWatering = Math.floor((nextWateringDate.getTime() - Date.now()) / 1000);
+    if (secondsUntilWatering > 0) {
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: "Time to water your plant! 💧",
+          body: `${plantName} is thirsty. Check the soil and give it some water today!`,
+        },
+        trigger: { 
+          type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+          seconds: secondsUntilWatering 
+        } as Notifications.TimeIntervalTriggerInput,
+      });
     }
   };
 
@@ -70,6 +104,7 @@ export default function SetupRoute() {
     });
 
     if (added) {
+      await scheduleWateringNotification(identifiedPlant.name, new Date(nextWateringAt));
       router.replace("/(main)");
     }
   };
@@ -77,20 +112,30 @@ export default function SetupRoute() {
   return (
     <SafeAreaView edges={["top", "bottom"]} className="flex-1 bg-slate-50">
       <View className="flex-1 p-6">
-        <View className="rounded-2xl bg-emerald-50 p-4">
-          <Text className="text-xl font-bold text-slate-800">{identifiedPlant.name}</Text>
-          <Text className="mt-1 text-sm text-slate-500">{identifiedPlant.scientificName}</Text>
+        <View className="rounded-2xl bg-emerald-50 p-6 shadow-sm border border-emerald-100">
+          <Text className="text-2xl font-bold text-slate-800">{identifiedPlant.name}</Text>
+          <Text className="mt-1 text-base text-slate-500 italic">{identifiedPlant.scientificName}</Text>
         </View>
 
-        <Text className="mt-8 text-base font-semibold text-slate-700">
-          Quando foi a última vez que você regou esta planta?
-        </Text>
+        <View className="mt-10 items-center">
+          <View className="bg-blue-50 p-4 rounded-full mb-4">
+            {/* @ts-ignore */}
+            <Droplet color="#3b82f6" size={32} />
+          </View>
+          <Text className="text-xl font-bold text-slate-800 text-center">
+            Set up your watering schedule
+          </Text>
+          <Text className="text-center text-slate-500 mt-2 px-4">
+            We recommend watering every {wateringFrequencyDays} days. When did you last water this plant?
+          </Text>
+        </View>
 
         <TouchableOpacity
-          className="mt-3 rounded-xl border border-emerald-300 bg-white p-4"
+          className="mt-6 rounded-2xl border-2 border-blue-200 bg-white p-5 flex-row justify-between items-center shadow-sm"
           onPress={() => setShowPicker(true)}
         >
-          <Text className="text-slate-700">{lastWateredAt.toLocaleDateString("pt-BR")}</Text>
+          <Text className="text-slate-500 font-medium text-lg">Last Watered</Text>
+          <Text className="text-blue-600 font-bold text-lg">{lastWateredAt.toLocaleDateString("pt-BR")}</Text>
         </TouchableOpacity>
 
         {showPicker && (
@@ -102,12 +147,16 @@ export default function SetupRoute() {
           />
         )}
 
-        <TouchableOpacity
-          className="mt-8 rounded-xl bg-emerald-600 p-4"
-          onPress={() => void savePlant()}
-        >
-          <Text className="text-center text-base font-semibold text-white">Salvar planta</Text>
-        </TouchableOpacity>
+        <View className="flex-1 justify-end pb-4">
+          <TouchableOpacity
+            className="rounded-2xl bg-blue-600 p-5 shadow-lg"
+            onPress={() => void savePlant()}
+          >
+            <Text className="text-center text-lg font-bold text-white">
+              Set Reminder & Save Plant
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </SafeAreaView>
   );

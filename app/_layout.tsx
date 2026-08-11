@@ -42,18 +42,18 @@ export default function RootLayout() {
     const configured = configureRevenueCat();
     if (!configured) return;
 
-    // Fonte da verdade reativa: qualquer mudança no CustomerInfo (compra,
-    // renovação, refund, expiração, restauração) reflete direto no store.
-    const listener = Purchases.addCustomerInfoUpdateListener((info) => {
+    const updateListener = (info: any) => {
       const isActive = Boolean(info.entitlements.active[PREMIUM_ENTITLEMENT_ID]);
       usePlantStore.getState().setPremium(isActive);
-    });
+    };
+    
+    Purchases.addCustomerInfoUpdateListener(updateListener);
 
     // Hidratação inicial — não espera o primeiro evento do listener.
     void usePlantStore.getState().syncSubscription();
 
     return () => {
-      listener.remove();
+      Purchases.removeCustomerInfoUpdateListener(updateListener);
     };
   }, []);
 

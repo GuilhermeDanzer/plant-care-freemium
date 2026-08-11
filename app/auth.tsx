@@ -2,6 +2,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ArrowLeft, Leaf, Lock, Mail } from "lucide-react-native";
 import { type ComponentType, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -39,6 +40,7 @@ const LockIcon = Lock as unknown as ComponentType<{ color?: string; size?: numbe
 const BackIcon = ArrowLeft as unknown as ComponentType<{ color?: string; size?: number }>;
 
 export default function AuthRoute() {
+  const { t } = useTranslation();
   const router = useRouter();
   const params = useLocalSearchParams<{ returnTo?: string }>();
   const setUser = usePlantStore((s) => s.setUser);
@@ -71,7 +73,7 @@ export default function AuthRoute() {
           password,
         });
         setUser(user);
-        showSuccessToast("Bem-vindo de volta", user?.email ?? undefined);
+        showSuccessToast(t("auth.welcomeBackTitle"), user?.email ?? undefined);
         dismiss();
         return;
       }
@@ -83,21 +85,21 @@ export default function AuthRoute() {
 
       if (!user) {
         showInfoToast(
-          "Verifique seu e-mail",
-          "Enviamos um link para confirmar sua conta."
+          t("auth.checkEmailTitle"),
+          t("auth.checkEmailBody")
         );
         setMode("signIn");
         return;
       }
 
       setUser(user);
-      showSuccessToast("Conta criada", user.email ?? undefined);
+      showSuccessToast(t("auth.accountCreatedTitle"), user.email ?? undefined);
       dismiss();
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "Não foi possível continuar.";
+        error instanceof Error ? error.message : t("auth.unableToContinue");
       showErrorToast(
-        isSignIn ? "Falha ao entrar" : "Falha ao criar conta",
+        isSignIn ? t("auth.loginFailed") : t("auth.signUpFailed"),
         message
       );
     } finally {
@@ -106,7 +108,7 @@ export default function AuthRoute() {
   };
 
   const handleGuest = () => {
-    showInfoToast("Modo local", "Suas plantas ficarão só neste aparelho.");
+    showInfoToast(t("auth.localModeTitle"), t("auth.localModeBody"));
     dismiss();
   };
 
@@ -147,12 +149,12 @@ export default function AuthRoute() {
               PlantHelper
             </Text>
             <Text className="mt-3 text-center text-3xl font-bold tracking-tight text-slate-900">
-              {isSignIn ? "Bem-vindo de volta" : "Crie sua conta"}
+              {isSignIn ? t("auth.welcomeBackTitle") : t("auth.createAccountTitle")}
             </Text>
             <Text className="mt-2 text-center text-base leading-6 text-slate-500">
               {isSignIn
-                ? "Entre para manter suas plantas sincronizadas."
-                : "Salve seu jardim na nuvem e acesse de qualquer lugar."}
+                ? t("auth.signInDesc")
+                : t("auth.signUpDesc")}
             </Text>
           </View>
 
@@ -162,7 +164,7 @@ export default function AuthRoute() {
               style={shadowLayering.core}
             >
               <Text className="text-xs font-semibold uppercase tracking-[2px] text-slate-400">
-                E-mail
+                {t("common.emailLabel")}
               </Text>
               <View className="mt-2 flex-row items-center rounded-2xl bg-slate-50 px-4">
                 <MailIcon color="#64748b" size={18} />
@@ -173,14 +175,14 @@ export default function AuthRoute() {
                   autoCorrect={false}
                   autoComplete="email"
                   keyboardType="email-address"
-                  placeholder="voce@exemplo.com"
+                  placeholder={t("common.emailPlaceholder")}
                   placeholderTextColor="#94a3b8"
                   className="ml-3 flex-1 py-4 text-base text-slate-900"
                 />
               </View>
 
               <Text className="mt-5 text-xs font-semibold uppercase tracking-[2px] text-slate-400">
-                Senha
+                {t("common.passwordLabel")}
               </Text>
               <View className="mt-2 flex-row items-center rounded-2xl bg-slate-50 px-4">
                 <LockIcon color="#64748b" size={18} />
@@ -190,7 +192,7 @@ export default function AuthRoute() {
                   secureTextEntry
                   autoCapitalize="none"
                   autoComplete={isSignIn ? "current-password" : "new-password"}
-                  placeholder="Mínimo de 6 caracteres"
+                  placeholder={t("common.passwordPlaceholder")}
                   placeholderTextColor="#94a3b8"
                   className="ml-3 flex-1 py-4 text-base text-slate-900"
                 />
@@ -215,10 +217,10 @@ export default function AuthRoute() {
                 {isSubmitting ? <ActivityIndicator color="#ffffff" /> : null}
                 <Text className="text-center text-base font-bold tracking-tight text-white">
                   {isSubmitting
-                    ? "Aguarde..."
+                    ? t("common.pleaseWait")
                     : isSignIn
-                      ? "Entrar"
-                      : "Criar conta"}
+                      ? t("auth.signInBtn")
+                      : t("auth.signUpBtn")}
                 </Text>
               </View>
             </LinearGradient>
@@ -229,9 +231,9 @@ export default function AuthRoute() {
             onPress={() => setMode(isSignIn ? "signUp" : "signIn")}
           >
             <Text className="text-sm text-slate-500">
-              {isSignIn ? "Não tem conta? " : "Já tem conta? "}
+              {isSignIn ? t("auth.noAccountPrompt") : t("auth.hasAccountPrompt")}
               <Text className="font-semibold text-emerald-700">
-                {isSignIn ? "Criar agora" : "Entrar"}
+                {isSignIn ? t("auth.createNow") : t("auth.signInBtn")}
               </Text>
             </Text>
           </Pressable>
@@ -242,7 +244,7 @@ export default function AuthRoute() {
               onPress={handleGuest}
             >
               <Text className="text-xs font-medium text-slate-400 underline">
-                Continuar sem conta
+                {t("auth.continueWithoutAccount")}
               </Text>
             </Pressable>
           )}

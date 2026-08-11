@@ -90,51 +90,97 @@ const parseSuggestion = (suggestion: PlantIdSuggestion): IdentifiedPlant => {
  * ========================================================================= */
 
 export const plantService = {
-  identifyPlant: async (imageUri: string): Promise<IdentifiedPlant> => {
+  identifyPlant: async (imageUris: string[]): Promise<any> => { // We will map it in camera or scan-result
     try {
-      if (!imageUri) {
+      if (!imageUris || imageUris.length === 0) {
         throw new Error("Nenhuma URI de imagem foi informada para identificação.");
       }
 
-      const base64String = await convertToBase64(imageUri);
-      const payload = { images: [base64String] };
+      const base64Strings = await Promise.all(
+        imageUris.map((uri) => convertToBase64(uri))
+      );
+      
+      const firstBase64 = base64Strings[0];
+      
+      // Simple string hash for caching
+      let hash = 0;
+      for (let i = 0; i < firstBase64.length; i++) {
+        const char = firstBase64.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash; // Convert to 32bit integer
+      }
+      const cacheKey = `plant_scan_cache_${hash}`;
 
-      const response = await plantIdApi.post<PlantIdResponse>(
+      // Check cache
+      try {
+        const { default: AsyncStorage } = await import('@react-native-async-storage/async-storage');
+        const cachedStr = await AsyncStorage.getItem(cacheKey);
+        if (cachedStr) {
+          const cached = JSON.parse(cachedStr);
+          const now = Date.now();
+          if (now - cached.timestamp < 24 * 60 * 60 * 1000) {
+            console.log("[plantService] Retornando JSON do cache!");
+            return cached.data;
+          }
+        }
+      } catch (e) {
+        console.log("[plantService] Erro ao ler cache", e);
+      }
+
+      const payload = { images: base64Strings, health: "all" };
+
+      const response = await plantIdApi.post<any>(
         "/identification",
         payload,
         {
           params: {
-            details:
-              "common_names,watering,best_watering,best_light_condition",
+            details: "common_names,watering,best_watering,best_light_condition,local_name,description,url,treatment,classification,cause",
             language: "pt",
           },
         }
       );
       
+      const responseData = response.data.result;
 
-      const firstSuggestion =
-        response.data.result?.classification?.suggestions?.[0];
+      // Map to our KindwiseIdentificationResponse interface
+      const mappedResponse = {
+        is_plant: responseData?.is_plant || { binary: true, probability: 1 },
+        suggestions: responseData?.classification?.suggestions?.map((s: any) => ({
+          plant_name: s.name || "Unknown",
+          probability: s.probability || 0,
+          plant_details: s.details
+        })) || [],
+        health_assessment: responseData?.is_healthy ? {
+          is_healthy: responseData.is_healthy,
+          diseases: responseData?.disease?.suggestions?.map((d: any) => ({
+            name: d.name || "Unknown",
+            probability: d.probability || 0,
+            treatment: d.details?.treatment
+          })) || []
+        } : undefined
+      };
 
-      if (!firstSuggestion) {
-        return {
-          name: "Planta não identificada",
-          scientificName: "N/A",
-          wateringLevel: 2,
-        };
+      // Save to cache
+      try {
+        const { default: AsyncStorage } = await import('@react-native-async-storage/async-storage');
+        await AsyncStorage.setItem(cacheKey, JSON.stringify({
+          timestamp: Date.now(),
+          data: mappedResponse
+        }));
+      } catch (e) {
+        console.log("[plantService] Erro ao salvar cache", e);
       }
 
-      return parseSuggestion(firstSuggestion);
+      return mappedResponse;
     } catch (error) {
       logAxiosError("plantService.identifyPlant", error);
-      if (error instanceof AxiosError && error.response) {
-        return {
-          name: "Falha na identificação",
-          scientificName: "N/A",
-          wateringLevel: 2,
-        };
-      }
       throw error;
     }
+  },
+
+  // Export parseSuggestion for converting KindwiseSuggestion to IdentifiedPlant
+  parseSuggestion: (suggestion: any): IdentifiedPlant => {
+    return parseSuggestion(suggestion);
   },
 
   /**

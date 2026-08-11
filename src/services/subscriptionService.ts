@@ -97,4 +97,21 @@ export const subscriptionService = {
     const info = await Purchases.restorePurchases();
     return toStatus(info);
   },
+
+  getMonthlyPriceString: async (): Promise<string | null> => {
+    try {
+      const offerings = await Purchases.getOfferings();
+      const current = offerings.current;
+      if (!current) return null;
+
+      const pkg =
+        current.monthly ??
+        current.availablePackages.find((p) => p.identifier === "$rc_monthly") ??
+        current.availablePackages.find((p) => p.identifier === "Monthly");
+
+      return pkg?.product.priceString ?? null;
+    } catch {
+      return null;
+    }
+  },
 };

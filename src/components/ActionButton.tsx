@@ -16,6 +16,7 @@ export function ActionButton({ disabled = false, onPress }: ActionButtonProps) {
         disabled ? "bg-slate-300" : "bg-emerald-600"
       }`}
       onPress={onPress}
+      testID="add-button"
     >
       <PlusIcon color="#ffffff" size={28} />
     </TouchableOpacity>

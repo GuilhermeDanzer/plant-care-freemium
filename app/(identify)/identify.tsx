@@ -1,7 +1,8 @@
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import { type ComponentType } from "react";
-import { Camera, Image as ImageIcon } from "lucide-react-native";
+import { useTranslation } from "react-i18next";
+import { ArrowLeft, Camera, Image as ImageIcon } from "lucide-react-native";
 import { Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useIdentifyPlant } from "../../src/hooks/useIdentifyPlant";
@@ -11,23 +12,25 @@ import { showErrorToast, showInfoToast } from "../../src/utils/showToasts";
 
 const CameraIcon = Camera as unknown as ComponentType<{ color?: string; size?: number }>;
 const GalleryIcon = ImageIcon as unknown as ComponentType<{ color?: string; size?: number }>;
+const BackIcon = ArrowLeft as unknown as ComponentType<{ color?: string; size?: number }>;
 
 export default function IdentifyRoute() {
+  const { t } = useTranslation();
   const router = useRouter();
   const identifyMutation = useIdentifyPlant();
   const plants = usePlantStore((s) => s.plants);
   const isPremium = usePlantStore((s) => s.isPremium);
   const atFreeLimit = !isPremium && plants.length >= FREE_PLANT_LIMIT;
 
-  const identifyFromUri = async (imageUri?: string) => {
-    if (!imageUri) return;
+  const identifyFromUris = async (imageUris?: string[]) => {
+    if (!imageUris || imageUris.length === 0) return;
 
-    const identifiedPlant = await identifyMutation.mutateAsync(imageUri);
+    const identifiedPlant = await identifyMutation.mutateAsync(imageUris);
     router.push({
       pathname: "/(identify)/setup",
       params: {
         identifiedPlant: JSON.stringify(identifiedPlant),
-        imageUri,
+        imageUri: imageUris[0],
       },
     });
   };
@@ -39,8 +42,8 @@ export default function IdentifyRoute() {
       const permission = await ImagePicker.requestCameraPermissionsAsync();
       if (!permission.granted) {
         showInfoToast(
-          "Permissão necessária",
-          "Precisamos de acesso à câmera para tirar a foto."
+          t("identify.permissionNeededTitle"),
+          t("identify.permissionCameraBody")
         );
         return;
       }
@@ -51,11 +54,11 @@ export default function IdentifyRoute() {
         allowsEditing: true,
       });
 
-      if (result.canceled) return;
-      await identifyFromUri(result.assets[0]?.uri);
+      if (result.canceled || !result.assets[0]?.uri) return;
+      await identifyFromUris([result.assets[0].uri]);
     } catch (error) {
       console.error("[identify] Falha ao capturar imagem.", error);
-      showErrorToast("Erro", "Não foi possível tirar a foto da planta.");
+      showErrorToast(t("identify.errorTitle"), t("identify.errorCameraBody"));
     }
   };
 
@@ -66,8 +69,8 @@ export default function IdentifyRoute() {
       const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permission.granted) {
         showInfoToast(
-          "Permissão necessária",
-          "Precisamos de acesso à galeria para escolher a foto."
+          t("identify.permissionNeededTitle"),
+          t("identify.permissionGalleryBody")
         );
         return;
       }
@@ -75,27 +78,37 @@ export default function IdentifyRoute() {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ["images"],
         quality: 0.6,
-        allowsEditing: true,
+        allowsMultipleSelection: true,
       });
 
       if (result.canceled) return;
-      await identifyFromUri(result.assets[0]?.uri);
+      const uris = result.assets.map((a) => a.uri);
+      await identifyFromUris(uris);
     } catch (error) {
       console.error("[identify] Falha ao selecionar imagem da galeria.", error);
-      showErrorToast("Erro", "Não foi possível selecionar a foto da galeria.");
+      showErrorToast(t("identify.errorTitle"), t("identify.errorGalleryBody"));
     }
   };
 
   return (
     <SafeAreaView edges={["top", "bottom"]} className="flex-1 bg-slate-50">
+      <View className="absolute left-6 top-6 z-10 mt-12">
+        <TouchableOpacity
+          onPress={() => router.back()}
+          className="h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm"
+          style={{ elevation: 4 }}
+        >
+          <BackIcon color="#0f172a" size={20} />
+        </TouchableOpacity>
+      </View>
       <View className="flex-1 justify-center p-6">
         <View className="rounded-3xl bg-white p-6 shadow-lg" style={{ elevation: 8 }}>
           <View className="items-center">
             <Text className="text-center text-2xl font-bold text-slate-800">
-              Como voce quer identificar?
+              {t("identify.title")}
             </Text>
             <Text className="mt-3 text-center text-sm text-slate-500">
-              Tire uma foto agora ou escolha uma imagem salva no celular.
+              {t("identify.subtitle")}
             </Text>
           </View>
 
@@ -109,7 +122,7 @@ export default function IdentifyRoute() {
               <Text
                 className={`text-center text-base font-semibold ${atFreeLimit ? "text-slate-600" : "text-white"}`}
               >
-                {identifyMutation.isPending ? "Identificando..." : "Tirar foto"}
+                {identifyMutation.isPending ? t("identify.identifying") : t("identify.takePhotoBtn")}
               </Text>
             </View>
           </TouchableOpacity>
@@ -122,14 +135,14 @@ export default function IdentifyRoute() {
             <View className="flex-row items-center justify-center gap-2">
               <GalleryIcon color="#10b981" size={18} />
               <Text className="text-center text-base font-semibold text-emerald-700">
-                Escolher da galeria
+                {t("identify.galleryBtn")}
               </Text>
             </View>
           </TouchableOpacity>
 
           {atFreeLimit ? (
             <Text className="mt-4 text-center text-sm text-slate-500">
-              Limite do plano gratis atingido.
+              {t("identify.limitReached")}
             </Text>
           ) : null}
         </View>

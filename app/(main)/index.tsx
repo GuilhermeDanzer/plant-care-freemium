@@ -1,6 +1,7 @@
 import { useRouter } from "expo-router";
 import { type ComponentType, useEffect, useState } from "react";
-import { LogIn, Sprout, UserCircle2 } from "lucide-react-native";
+import { useTranslation } from "react-i18next";
+import { LogIn, Sprout, UserCircle2, Settings } from "lucide-react-native";
 import {
   Alert,
   FlatList,
@@ -23,8 +24,9 @@ import { showInfoToast, showSuccessToast } from "../../src/utils/showToasts";
 const SproutIcon = Sprout as unknown as ComponentType<{ color?: string; size?: number }>;
 const LogInIcon = LogIn as unknown as ComponentType<{ color?: string; size?: number }>;
 const UserIcon = UserCircle2 as unknown as ComponentType<{ color?: string; size?: number }>;
-
+const SettingsIcon = Settings as unknown as ComponentType<{ color?: string; size?: number }>;
 export default function MainIndexRoute() {
+  const { t } = useTranslation();
   const router = useRouter();
   const plants = usePlantStore((s) => s.plants);
   const loadPlants = usePlantStore((s) => s.loadPlants);
@@ -47,7 +49,7 @@ export default function MainIndexRoute() {
 
   const handleDeletePlant = async (plantId: number, plantName: string) => {
     await deletePlant(plantId);
-    showSuccessToast("Planta removida", `${plantName} foi excluída.`);
+    showSuccessToast(t("home.plantDeletedTitle"), t("home.plantDeletedBody", { plantName }));
   };
 
   const handleOpenPlant = (plantId: number) => {
@@ -55,28 +57,24 @@ export default function MainIndexRoute() {
   };
 
   const handleAdd = () => {
-    if (atFreeLimit) {
-      router.push("/paywall");
-      return;
-    }
     router.push("/(identify)/identify");
   };
 
   const handleAuthPress = () => {
     if (isAuthenticated) {
       Alert.alert(
-        "Encerrar sessão",
+        t("home.signOutPromptTitle"),
         user?.email
-          ? `Deslogar de ${user.email}?`
-          : "Você quer sair da sua conta?",
+          ? t("home.signOutPromptBodyUser", { email: user.email })
+          : t("home.signOutPromptBodyGeneric"),
         [
-          { text: "Cancelar", style: "cancel" },
+          { text: t("common.cancel"), style: "cancel" },
           {
-            text: "Sair",
+            text: t("home.signOutConfirm"),
             style: "destructive",
             onPress: async () => {
               await signOut();
-              showInfoToast("Sessão encerrada");
+              showInfoToast(t("home.sessionEnded"));
             },
           },
         ]
@@ -101,28 +99,39 @@ export default function MainIndexRoute() {
         <View className="mb-6 flex-row items-start justify-between px-2">
           <View className="flex-1 pr-4">
             <Text className="text-3xl font-bold tracking-tight text-slate-900">
-              Minhas plantinhas
+              {t("home.title")}
             </Text>
             <Text className="mt-2 text-sm text-slate-500">
               {isAuthenticated && user?.email
-                ? `Conectado como ${user.email}`
-                : "Acompanhe as regas e cuide da sua selva particular."}
+                ? t("home.subtitleUser", { email: user.email })
+                : t("home.subtitleGeneric")}
             </Text>
           </View>
 
           <View className="items-end">
-            <TouchableOpacity
-              onPress={handleAuthPress}
-              className="h-10 w-10 items-center justify-center rounded-full bg-white"
-              style={shadowLayering.core}
-              accessibilityLabel={isAuthenticated ? "Sair da conta" : "Entrar"}
-            >
-              {isAuthenticated ? (
-                <UserIcon color="#047857" size={20} />
-              ) : (
-                <LogInIcon color="#0f172a" size={18} />
-              )}
-            </TouchableOpacity>
+            <View className="flex-row gap-2">
+              <TouchableOpacity
+                onPress={() => router.push('/settings')}
+                className="h-10 w-10 items-center justify-center rounded-full bg-white"
+                style={shadowLayering.core}
+                accessibilityLabel={t("home.accessibilitySettings")}
+                testID="settings-button"
+              >
+                <SettingsIcon color="#0f172a" size={18} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleAuthPress}
+                className="h-10 w-10 items-center justify-center rounded-full bg-white"
+                style={shadowLayering.core}
+                accessibilityLabel={isAuthenticated ? t("home.accessibilitySignOut") : t("home.accessibilitySignIn")}
+              >
+                {isAuthenticated ? (
+                  <UserIcon color="#047857" size={20} />
+                ) : (
+                  <LogInIcon color="#0f172a" size={18} />
+                )}
+              </TouchableOpacity>
+            </View>
 
             {plants.length > 0 ? (
               <TouchableOpacity
@@ -130,7 +139,7 @@ export default function MainIndexRoute() {
                 className="mt-3"
               >
                 <Text className="text-sm font-semibold text-emerald-700">
-                  {isEditing ? "Concluir" : "Editar"}
+                  {isEditing ? t("home.editModeDone") : t("home.editModeEdit")}
                 </Text>
               </TouchableOpacity>
             ) : null}
@@ -158,10 +167,10 @@ export default function MainIndexRoute() {
                 <SproutIcon color="#10b981" size={30} />
               </View>
               <Text className="mt-4 text-lg font-semibold tracking-tight text-slate-800">
-                Nenhuma planta cadastrada
+                {t("home.emptyStateTitle")}
               </Text>
               <Text className="mt-2 text-center text-sm text-slate-500">
-                Toque no botão flutuante para adicionar sua primeira planta.
+                {t("home.emptyStateBody")}
               </Text>
             </View>
           }

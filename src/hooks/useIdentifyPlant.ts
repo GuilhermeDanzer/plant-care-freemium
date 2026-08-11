@@ -3,6 +3,6 @@ import { plantService } from "../services/plantService";
 
 export const useIdentifyPlant = () => {
   return useMutation({
-    mutationFn: (imageUri: string) => plantService.identifyPlant(imageUri),
+    mutationFn: (imageUris: string[]) => plantService.identifyPlant(imageUris),
   });
 };

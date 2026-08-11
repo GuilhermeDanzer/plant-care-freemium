@@ -24,6 +24,8 @@ interface PlantStoreState {
   user: AppUser | null;
   isAuthenticated: boolean;
   lastSyncedAt: Date | null;
+  totalFreeScansUsed: number;
+  monthlyPremiumScansUsed: number;
 
   loadPlants: (options?: { showLoading?: boolean }) => Promise<void>;
   addPlant: (payload: InsertPlantInput) => Promise<boolean>;
@@ -57,6 +59,8 @@ export const usePlantStore = create<PlantStoreState>((set, get) => ({
   user: null,
   isAuthenticated: false,
   lastSyncedAt: null,
+  totalFreeScansUsed: 0,
+  monthlyPremiumScansUsed: 0,
 
   loadPlants: async (options) => {
     const showLoading = options?.showLoading ?? true;
@@ -71,11 +75,7 @@ export const usePlantStore = create<PlantStoreState>((set, get) => ({
   },
 
   addPlant: async (payload) => {
-    const { isPremium } = get();
-    if (!isPremium) {
-      const count = await countMyPlants();
-      if (count >= FREE_PLANT_LIMIT) return false;
-    }
+    // Ticket 2: Removed FREE_PLANT_LIMIT for manual additions
     await insertPlant(payload);
     await get().loadPlants({ showLoading: false });
     return true;

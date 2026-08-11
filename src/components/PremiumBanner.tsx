@@ -1,6 +1,7 @@
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
 import { type ComponentType } from "react";
+import { useTranslation } from "react-i18next";
 import { ChevronRight, Gem } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { shadowCastEmerald } from "../utils/shadows";
@@ -19,10 +20,14 @@ export interface PremiumBannerProps {
 }
 
 export function PremiumBanner({
-  title = "PlantHelper Pro",
-  subtitle = "Diagnóstico IA, histórico e slots ilimitados.",
+  title,
+  subtitle,
   onPress,
 }: PremiumBannerProps) {
+  const { t } = useTranslation();
+  
+  const displayTitle = title ?? t("components.premiumTitle");
+  const displaySubtitle = subtitle ?? t("components.premiumSubtitle");
   return (
     <Pressable onPress={onPress} style={shadowCastEmerald}>
       <LinearGradient
@@ -48,13 +53,13 @@ export function PremiumBanner({
 
           <View className="flex-1 pr-3">
             <Text className="text-[11px] font-semibold uppercase tracking-[3px] text-emerald-200/80">
-              Premium
+              {t("components.premiumBadge")}
             </Text>
             <Text className="mt-0.5 text-base font-bold tracking-tight text-white">
-              {title}
+              {displayTitle}
             </Text>
             <Text className="mt-0.5 text-xs text-emerald-50/80">
-              {subtitle}
+              {displaySubtitle}
             </Text>
           </View>
 

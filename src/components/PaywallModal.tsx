@@ -1,6 +1,7 @@
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
-import { type ComponentType, useState } from "react";
+import { type ComponentType, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Check, Gem, X } from "lucide-react-native";
 import {
   ActivityIndicator,
@@ -42,11 +43,17 @@ export interface PaywallModalProps {
 }
 
 export function PaywallModal({ onClose }: PaywallModalProps) {
+  const { t } = useTranslation();
   const setPremium = usePlantStore((s) => s.setPremium);
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
+  const [priceLabel, setPriceLabel] = useState<string>(PREMIUM_MONTHLY_PRICE);
 
-  const priceLabel = PREMIUM_MONTHLY_PRICE;
+  useEffect(() => {
+    void subscriptionService.getMonthlyPriceString().then((price) => {
+      if (price) setPriceLabel(price);
+    });
+  }, []);
 
   const handleSubscribe = async () => {
     if (isPurchasing) return;
@@ -57,13 +64,15 @@ export function PaywallModal({ onClose }: PaywallModalProps) {
       if (result.isActive) {
         await setPremium(true);
         showPremiumToast(
-          "Assinatura confirmada",
-          "Bem-vindo ao PlantHelper Pro."
+          t("paywall.subscribeSuccessTitle"),
+          t("paywall.subscribeSuccessBody")
         );
         onClose();
       } else {
-        showErrorToast("Falha na assinatura", "Tente novamente em instantes.");
+        showErrorToast(t("paywall.subscribeErrorTitle"), t("paywall.subscribeErrorBody"));
       }
+    } catch (error) {
+      showErrorToast(t("paywall.subscribeErrorTitle"), t("paywall.subscribeErrorBody"));
     } finally {
       setIsPurchasing(false);
     }
@@ -77,13 +86,15 @@ export function PaywallModal({ onClose }: PaywallModalProps) {
       if (result.isActive) {
         await setPremium(true);
         showPremiumToast(
-          "Assinatura restaurada",
-          "Acesso Premium reativado."
+          t("paywall.restoreSuccessTitle"),
+          t("paywall.restoreSuccessBody")
         );
         onClose();
       } else {
-        showInfoToast("Nenhuma assinatura encontrada");
+        showInfoToast(t("paywall.restoreErrorBody"));
       }
+    } catch (error) {
+      showErrorToast("Erro", "Não foi possível restaurar.");
     } finally {
       setIsRestoring(false);
     }
@@ -123,13 +134,13 @@ export function PaywallModal({ onClose }: PaywallModalProps) {
           </View>
 
           <Text className="mt-3 text-xs font-semibold uppercase tracking-[3px] text-emerald-700">
-            PlantHelper Pro
+            {t("paywall.proBadge")}
           </Text>
           <Text className="mt-3 text-center text-3xl font-bold tracking-tight text-slate-900">
-            Sua selva, sem limites
+            {t("paywall.title")}
           </Text>
           <Text className="mt-3 text-center text-base leading-6 text-slate-500">
-            Desbloqueie uma experiência premium com mais espaço, contexto e cuidado.
+            {t("paywall.subtitle")}
           </Text>
         </View>
 
@@ -139,7 +150,12 @@ export function PaywallModal({ onClose }: PaywallModalProps) {
             className="rounded-[28px] border border-slate-100 bg-white p-6"
             style={shadowLayering.core}
           >
-            {premiumBenefits.map((benefit) => (
+            {[
+              t("paywall.benefit1"),
+              t("paywall.benefit2"),
+              t("paywall.benefit3"),
+              t("paywall.benefit4"),
+            ].map((benefit) => (
               <View key={benefit} className="mb-4 flex-row items-center">
                 <View className="mr-3 rounded-full bg-emerald-50 p-2">
                   <CheckIcon color="#047857" size={14} />
@@ -171,13 +187,13 @@ export function PaywallModal({ onClose }: PaywallModalProps) {
             <View className="flex-row items-start justify-between">
               <View>
                 <Text className="text-[10px] font-semibold uppercase tracking-[3px] text-emerald-200/80">
-                  Plano mensal
+                  {t("paywall.planBadge")}
                 </Text>
                 <Text className="mt-2 text-[40px] font-bold leading-tight tracking-tight text-white">
                   {priceLabel}
                 </Text>
                 <Text className="mt-1 text-xs text-emerald-50/80">
-                  Cancele quando quiser.
+                  {t("paywall.cancelAnytime")}
                 </Text>
               </View>
 
@@ -205,7 +221,7 @@ export function PaywallModal({ onClose }: PaywallModalProps) {
             <View className="flex-row items-center justify-center gap-2 p-5">
               {isPurchasing ? <ActivityIndicator color="#ffffff" /> : null}
               <Text className="text-center text-base font-bold tracking-tight text-white">
-                {isPurchasing ? "Processando..." : "Assinar agora"}
+                {isPurchasing ? t("paywall.subscribeProcessing") : t("paywall.subscribeBtn")}
               </Text>
             </View>
           </LinearGradient>
@@ -218,7 +234,7 @@ export function PaywallModal({ onClose }: PaywallModalProps) {
           disabled={isRestoring}
         >
           <Text className="text-xs font-medium text-slate-500 underline">
-            {isRestoring ? "Restaurando..." : "Restaurar compras"}
+            {isRestoring ? t("paywall.restoreProcessing") : t("paywall.restoreBtn")}
           </Text>
         </Pressable>
       </ScrollView>

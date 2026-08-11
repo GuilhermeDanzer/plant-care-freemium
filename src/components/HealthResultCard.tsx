@@ -1,4 +1,5 @@
 import { type ComponentType, useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import {
   AlertTriangle,
   Droplets,
@@ -122,15 +123,15 @@ interface StatePalette {
   icon: IconComponent;
 }
 
-const STATE_PALETTE: Record<HealthState, StatePalette> = {
+const getStatePalette = (t: any): Record<HealthState, StatePalette> => ({
   perfect: {
     tint: "#10b981",
     trackTint: "#d1fae5",
     bg: "bg-emerald-50",
     eyebrow: "text-emerald-700",
-    eyebrowLabel: "Radiante",
-    title: "Sua planta está radiante!",
-    subtitle: "Nada a ajustar por aqui. Continue com a rotina atual.",
+    eyebrowLabel: t("health.perfectEyebrow"),
+    title: t("health.perfectTitle"),
+    subtitle: t("health.perfectSubtitle"),
     icon: HeartIcon,
   },
   optimization: {
@@ -138,9 +139,9 @@ const STATE_PALETTE: Record<HealthState, StatePalette> = {
     trackTint: "#fde68a",
     bg: "bg-amber-50",
     eyebrow: "text-amber-700",
-    eyebrowLabel: "Dicas de otimização",
-    title: "Ela pode ir ainda mais longe",
-    subtitle: "Pequenos ajustes liberam o potencial pleno da sua planta.",
+    eyebrowLabel: t("health.optEyebrow"),
+    title: t("health.optTitle"),
+    subtitle: t("health.optSubtitle"),
     icon: SparklesIcon,
   },
   critical: {
@@ -148,12 +149,12 @@ const STATE_PALETTE: Record<HealthState, StatePalette> = {
     trackTint: "#fecdd3",
     bg: "bg-rose-50",
     eyebrow: "text-rose-700",
-    eyebrowLabel: "Diagnóstico de doença",
-    title: "Sinais importantes detectados",
-    subtitle: "Aja rápido com os passos abaixo para recuperar a saúde.",
+    eyebrowLabel: t("health.criticalEyebrow"),
+    title: t("health.criticalTitle"),
+    subtitle: t("health.criticalSubtitle"),
     icon: AlertIcon,
   },
-};
+});
 
 /* -------------------------------------------------------------------------- */
 /*  Health Gauge (SVG)                                                         */
@@ -162,9 +163,10 @@ const STATE_PALETTE: Record<HealthState, StatePalette> = {
 interface HealthGaugeProps {
   score: number;
   palette: StatePalette;
+  t: any;
 }
 
-function HealthGauge({ score, palette }: HealthGaugeProps) {
+function HealthGauge({ score, palette, t }: HealthGaugeProps) {
   const size = 96;
   const stroke = 9;
   const radius = (size - stroke) / 2;
@@ -200,7 +202,7 @@ function HealthGauge({ score, palette }: HealthGaugeProps) {
         {clamped}
       </Text>
       <Text className="mt-0.5 text-[9px] font-semibold uppercase tracking-widest text-slate-400">
-        Saúde
+        {t("health.healthLabel")}
       </Text>
     </View>
   );
@@ -256,6 +258,7 @@ export function HealthResultCard({
   response,
   lastCheckedAt,
 }: HealthResultCardProps) {
+  const { t } = useTranslation();
   const result = response?.result;
 
   // Fallback defensivo: payload malformado ou legado chegou até aqui.
@@ -271,10 +274,10 @@ export function HealthResultCard({
           style={shadowLayering.core}
         >
           <Text className="text-center text-sm text-slate-500">
-            Não foi possível exibir o último diagnóstico.
+            {t("health.noDataTitle")}
           </Text>
           <Text className="mt-2 text-center text-xs text-slate-400">
-            Faça uma nova consulta para atualizar os dados.
+            {t("health.noDataSubtitle")}
           </Text>
         </View>
       </View>
@@ -283,6 +286,7 @@ export function HealthResultCard({
 
   const { state, score, relevantSuggestions, hadSuggestions } =
     interpretResponse(response);
+  const STATE_PALETTE = getStatePalette(t);
   const palette = STATE_PALETTE[state];
   const insightTone: InsightTone =
     state === "critical" ? "critical" : "optimization";
@@ -300,7 +304,7 @@ export function HealthResultCard({
             style={shadowLayering.core}
           >
             <View className="flex-row items-center">
-              <HealthGauge score={score} palette={palette} />
+              <HealthGauge score={score} palette={palette} t={t} />
 
               <View className="ml-5 flex-1">
                 <View className="flex-row items-center">
@@ -344,12 +348,13 @@ export function HealthResultCard({
             palette={palette}
             score={score}
             hadNoisySuggestions={hadSuggestions}
+            t={t}
           />
         </FadeIn>
       ) : null}
 
       <Text className="mt-1 text-[11px] text-slate-400">
-        Última consulta: {formatFriendlyDate(lastCheckedAt)}
+        {t("health.lastChecked", { date: formatFriendlyDate(lastCheckedAt) })}
       </Text>
     </View>
   );
@@ -359,24 +364,24 @@ export function HealthResultCard({
 /*  General tips — quando API não devolveu sugestões acionáveis               */
 /* -------------------------------------------------------------------------- */
 
-const GENERAL_TIPS: { icon: IconComponent; tint: string; title: string; body: string }[] = [
+const getGeneralTips = (t: any): { icon: IconComponent; tint: string; title: string; body: string }[] => [
   {
     icon: DropletsIcon,
     tint: "#0ea5e9",
-    title: "Revise a rega",
-    body: "Espere o solo secar entre as regas. Excesso de água é a causa #1 de perda de vigor.",
+    title: t("health.tipsWaterTitle"),
+    body: t("health.tipsWaterBody"),
   },
   {
     icon: SunIcon,
     tint: "#d97706",
-    title: "Ajuste a luz",
-    body: "Mova a planta para um ponto com mais luz indireta e rotacione o vaso 1× por semana.",
+    title: t("health.tipsLightTitle"),
+    body: t("health.tipsLightBody"),
   },
   {
     icon: SproutIcon,
     tint: "#059669",
-    title: "Solo e nutrição",
-    body: "Considere uma adubação leve e verifique se o vaso ainda tem drenagem adequada.",
+    title: t("health.tipsSoilTitle"),
+    body: t("health.tipsSoilBody"),
   },
 ];
 
@@ -384,21 +389,23 @@ interface GeneralTipsCardProps {
   palette: StatePalette;
   score: number;
   hadNoisySuggestions: boolean;
+  t: any;
 }
 
 function GeneralTipsCard({
   palette,
   score,
   hadNoisySuggestions,
+  t,
 }: GeneralTipsCardProps) {
   const headline =
     score >= 70
-      ? "Poucos sinais — e espaço para otimizar"
-      : "Ainda há espaço para crescer";
+      ? t("health.tipsHeadlineGood")
+      : t("health.tipsHeadlineGrow");
 
   const subline = hadNoisySuggestions
-    ? "A IA não encontrou sintomas fortes o suficiente para nomear uma doença. Use os ajustes abaixo para subir o score."
-    : "Sem sintomas específicos detectados. Use os ajustes abaixo como checklist de otimização.";
+    ? t("health.tipsSublineNoisy")
+    : t("health.tipsSublineClean");
 
   return (
     <View style={shadowLayering.cast}>
@@ -414,7 +421,7 @@ function GeneralTipsCard({
             <Text
               className={`text-[10px] font-semibold uppercase tracking-[2px] ${palette.eyebrow}`}
             >
-              Checklist de otimização
+              {t("health.checklistEyebrow")}
             </Text>
             <Text className="mt-1 text-base font-bold tracking-tight text-slate-900">
               {headline}
@@ -426,7 +433,7 @@ function GeneralTipsCard({
         </View>
 
         <View className="mt-4 gap-3">
-          {GENERAL_TIPS.map((tip) => (
+          {getGeneralTips(t).map((tip) => (
             <View
               key={tip.title}
               className="flex-row items-start rounded-2xl border border-slate-100 bg-slate-50/60 p-3"

@@ -1,4 +1,5 @@
 import { WateringLevel } from "../types/plant";
+import i18n from "../i18n";
 
 const WATERING_LEVEL_TO_DAYS: Record<WateringLevel, number> = {
   1: 10,
@@ -32,10 +33,10 @@ export const getWateringCountdownLabel = (nextWateringAtIso: string): string => 
   const diffDays = Math.ceil((nextUtc - todayUtc) / (1000 * 60 * 60 * 24));
 
   if (diffDays <= 0) {
-    return "Regar HOJE";
+    return i18n.t("dateUtils.waterToday");
   }
 
-  return `Regar em ${diffDays} dia${diffDays > 1 ? "s" : ""}`;
+  return i18n.t("dateUtils.waterInDays", { count: diffDays });
 };
 
 export interface WateringCountdownDetail {
@@ -65,8 +66,8 @@ export const getWateringCountdownDetail = (
       diffDays,
       isOverdue: true,
       isToday: false,
-      label: `Atrasado ${Math.abs(diffDays)} dia${Math.abs(diffDays) > 1 ? "s" : ""}`,
-      helper: "Sua planta precisa de água agora",
+      label: i18n.t("dateUtils.overdueDays", { count: Math.abs(diffDays) }),
+      helper: i18n.t("dateUtils.overdueHelper"),
     };
   }
 
@@ -75,8 +76,8 @@ export const getWateringCountdownDetail = (
       diffDays,
       isOverdue: false,
       isToday: true,
-      label: "Regar hoje",
-      helper: "Dia de molhar as raízes",
+      label: i18n.t("dateUtils.waterTodayNormal"),
+      helper: i18n.t("dateUtils.waterTodayHelper"),
     };
   }
 
@@ -84,15 +85,16 @@ export const getWateringCountdownDetail = (
     diffDays,
     isOverdue: false,
     isToday: false,
-    label: `Em ${diffDays} dia${diffDays > 1 ? "s" : ""}`,
-    helper: "Próxima rega programada",
+    label: i18n.t("dateUtils.inDays", { count: diffDays }),
+    helper: i18n.t("dateUtils.inDaysHelper"),
   };
 };
 
 export const formatFriendlyDate = (iso: string | null | undefined): string => {
   if (!iso) return "—";
   const date = new Date(iso);
-  return date.toLocaleDateString("pt-BR", {
+  const locale = i18n.language === "pt-BR" ? "pt-BR" : "en-US";
+  return date.toLocaleDateString(locale, {
     day: "2-digit",
     month: "short",
     year: "numeric",
