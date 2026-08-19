@@ -1,5 +1,5 @@
-import { WateringLevel } from "../types/plant";
-import i18n from "../i18n";
+import { WateringLevel } from "@/types/plant";
+import i18n from "@/i18n";
 
 const WATERING_LEVEL_TO_DAYS: Record<WateringLevel, number> = {
   1: 10,

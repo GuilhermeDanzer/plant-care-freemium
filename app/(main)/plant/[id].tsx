@@ -24,15 +24,16 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { HealthResultCard } from "../../../src/components/HealthResultCard";
-import { PremiumBanner } from "../../../src/components/PremiumBanner";
+import { HealthResultCard } from "@/components/HealthResultCard";
+import { PremiumBanner } from "@/components/PremiumBanner";
 import {
-  EmptyHealthCard,
   BlurredHealthCard,
+  EmptyHealthCard,
   PhotoSourceSheet,
   WateringHeroCard,
-} from "../../../src/components/plant-detail";
-import { WateringButton } from "../../../src/components/WateringButton";
+  JournalTimeline,
+} from "@/components/plant-detail";
+import { WateringButton } from "@/components/WateringButton";
 import {
   BackIcon,
   CameraIcon,
@@ -45,28 +46,28 @@ import {
   LockIcon,
   SparklesIcon,
   SproutIcon,
-} from "../../../src/components/icons";
-import { usePlantStore } from "../../../src/store/usePlantStore";
-import { PlantRecord } from "../../../src/types/plant";
+} from "@/components/icons";
+import { usePlantStore } from "@/store/usePlantStore";
+import { PlantRecord, JournalEntry } from "@/types/plant";
 import {
   formatFriendlyDate,
   getDaysSince,
   getWateringCountdownDetail,
-} from "../../../src/utils/dateUtils";
-import { getPlantDisplayName } from "../../../src/utils/plantUtils";
-import { shadowLayering } from "../../../src/utils/shadows";
+} from "@/utils/dateUtils";
+import { getPlantDisplayName } from "@/utils/plantUtils";
+import { shadowLayering } from "@/utils/shadows";
 import {
   showErrorToast,
   showInfoToast,
   showPremiumToast,
   showSuccessToast,
-} from "../../../src/utils/showToasts";
+} from "@/utils/showToasts";
 
 export default function PlantDetailsRoute() {
   const { t } = useTranslation();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const plantId = Number(id);
+  const plantId = id;
 
   const plants = usePlantStore((s) => s.plants);
   const isPremium = usePlantStore((s) => s.isPremium);
@@ -84,12 +85,24 @@ export default function PlantDetailsRoute() {
   const [isEditingName, setIsEditingName] = useState(false);
   const [nicknameDraft, setNicknameDraft] = useState("");
   const [isChecking, setIsChecking] = useState(false);
-  const [photoSheetOpen, setPhotoSheetOpen] = useState(false);
+  const [photoSheetMode, setPhotoSheetMode] = useState<"diagnosis" | "journal" | null>(null);
 
+  const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
+  const [isAddingJournal, setIsAddingJournal] = useState(false);
+  const addJournalEntry = usePlantStore((s) => s.addJournalEntry);
+  const getJournalForPlant = usePlantStore((s) => s.getJournalForPlant);
+
+  const loadJournal = useCallback(async () => {
+    if (plantId) {
+      const entries = await getJournalForPlant(plantId);
+      setJournalEntries(entries);
+    }
+  }, [plantId, getJournalForPlant]);
 
   useEffect(() => {
     if (!hasLoaded) void loadPlants();
-  }, [hasLoaded, loadPlants]);
+    void loadJournal();
+  }, [hasLoaded, loadPlants, loadJournal]);
 
   useEffect(() => {
     if (plant) {
@@ -142,10 +155,10 @@ export default function PlantDetailsRoute() {
 
 
 
-  const runDiagnosis = async (imageUri: string) => {
+  const runDiagnosis = async (imageUris: string[]) => {
     setIsChecking(true);
     try {
-      const result = await checkHealth(plant.id, imageUri);
+      const result = await checkHealth(plant.id, imageUris);
       if (result) {
         showSuccessToast(t("plantDetail.toastDiagDoneTitle"), t("plantDetail.toastDiagDoneBody"));
       } else {
@@ -169,11 +182,11 @@ export default function PlantDetailsRoute() {
       return;
     }
     if (isChecking) return;
-    setPhotoSheetOpen(true);
+    setPhotoSheetMode("diagnosis");
   };
 
   const handleUseCurrentPhoto = async () => {
-    setPhotoSheetOpen(false);
+    setPhotoSheetMode(null);
     if (!plant.image_uri) {
       showInfoToast(
         t("plantDetail.toastNoPhotoTitle"),
@@ -181,11 +194,12 @@ export default function PlantDetailsRoute() {
       );
       return;
     }
-    await runDiagnosis(plant.image_uri);
+    await runDiagnosis([plant.image_uri]);
   };
 
   const handleNewPhoto = async () => {
-    setPhotoSheetOpen(false);
+    const mode = photoSheetMode;
+    setPhotoSheetMode(null);
     try {
       const permission = await ImagePicker.requestCameraPermissionsAsync();
       if (!permission.granted) {
@@ -199,20 +213,72 @@ export default function PlantDetailsRoute() {
       const result = await ImagePicker.launchCameraAsync({
         mediaTypes: ["images"],
         quality: 0.6,
-        allowsEditing: true,
+        allowsEditing: false,
+      });
+
+      if (result.canceled || !result.assets[0]?.uri) return;
+      const uri = result.assets[0].uri;
+
+      if (mode === "diagnosis") {
+        await updatePlant(plant.id, { imageUri: uri });
+        await runDiagnosis([uri]);
+      } else if (mode === "journal") {
+        setIsAddingJournal(true);
+        await addJournalEntry(plant.id, uri, null);
+        await loadJournal();
+        setIsAddingJournal(false);
+        showSuccessToast(t("plantDetail.journalSuccessTitle", "Salvo!"), t("plantDetail.journalSuccessBody", "Sua foto foi adicionada ao diário."));
+      }
+    } catch (error) {
+      console.error("[plant/details] Falha ao obter nova foto.", error);
+      setIsAddingJournal(false);
+      showErrorToast(t("common.error"), t("plantDetail.toastCamErrorBody"));
+    }
+  };
+
+  const handleGalleryUpload = async () => {
+    const mode = photoSheetMode;
+    setPhotoSheetMode(null);
+    try {
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permission.granted) {
+        showInfoToast(
+          t("plantDetail.toastPermNeededTitle"),
+          t("identify.permissionGalleryBody")
+        );
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images"],
+        quality: 0.6,
+        allowsMultipleSelection: true,
       });
 
       if (result.canceled) return;
-      const uri = result.assets[0]?.uri;
-      if (!uri) return;
+      const uris = result.assets.map((a) => a.uri);
 
-      // Persiste a nova foto como foto "atual" para futuras consultas.
-      await updatePlant(plant.id, { imageUri: uri });
-      await runDiagnosis(uri);
+      if (mode === "diagnosis") {
+        await updatePlant(plant.id, { imageUri: uris[0] });
+        await runDiagnosis(uris);
+      } else if (mode === "journal") {
+        setIsAddingJournal(true);
+        for (const uri of uris) {
+          await addJournalEntry(plant.id, uri, null);
+        }
+        await loadJournal();
+        setIsAddingJournal(false);
+        showSuccessToast(t("plantDetail.journalSuccessTitle", "Salvo!"), t("plantDetail.journalSuccessBody", "Sua foto foi adicionada ao diário."));
+      }
     } catch (error) {
-      console.error("[plant/details] Falha ao obter nova foto.", error);
-      showErrorToast(t("common.error"), t("plantDetail.toastCamErrorBody"));
+      console.error("[plant/details] Falha ao selecionar imagem da galeria.", error);
+      setIsAddingJournal(false);
+      showErrorToast(t("common.error"), t("identify.errorGalleryBody"));
     }
+  };
+
+  const handleAddJournalEntry = () => {
+    setPhotoSheetMode("journal");
   };
 
   const health = plant.health_data;
@@ -372,15 +438,24 @@ export default function PlantDetailsRoute() {
             />
           </View>
         ) : null}
+
+
+        <JournalTimeline 
+          entries={journalEntries} 
+          isAddingEntry={isAddingJournal} 
+          onAddEntry={() => void handleAddJournalEntry()} 
+        />
       </ScrollView>
 
       {/* PHOTO SOURCE SHEET */}
       <PhotoSourceSheet
-        visible={photoSheetOpen}
+        visible={photoSheetMode !== null}
         hasCurrentPhoto={Boolean(plant.image_uri)}
+        hideCurrentPhoto={photoSheetMode === "journal"}
         onUseCurrent={() => void handleUseCurrentPhoto()}
         onNewPhoto={() => void handleNewPhoto()}
-        onClose={() => setPhotoSheetOpen(false)}
+        onGalleryUpload={() => void handleGalleryUpload()}
+        onClose={() => setPhotoSheetMode(null)}
       />
     </SafeAreaView>
   );

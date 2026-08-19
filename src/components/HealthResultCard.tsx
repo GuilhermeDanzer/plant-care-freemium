@@ -21,10 +21,10 @@ import Svg, { Circle } from "react-native-svg";
 import {
   DiseaseSuggestion,
   HealthAssessmentResponse,
-} from "../types/plant";
-import { formatFriendlyDate } from "../utils/dateUtils";
-import { shadowLayering } from "../utils/shadows";
-import { HealthInsightCard, type InsightTone } from "./HealthInsightCard";
+} from "@/types/plant";
+import { formatFriendlyDate } from "@/utils/dateUtils";
+import { shadowLayering } from "@/utils/shadows";
+import { HealthInsightCard, type InsightTone } from "@/components/HealthInsightCard";
 
 type IconComponent = ComponentType<{ color?: string; size?: number }>;
 

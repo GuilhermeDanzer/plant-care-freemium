@@ -4,8 +4,8 @@ import type {
   Subscription,
 } from "@supabase/supabase-js";
 import Purchases from "react-native-purchases";
-import { supabase } from "../lib/supabase";
-import { AppUser } from "../types/plant";
+import { supabase } from "@/lib/supabase";
+import { AppUser } from "@/types/plant";
 
 export interface SignInInput {
   email: string;

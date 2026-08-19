@@ -3,8 +3,8 @@ import { Bell, Camera, ChevronRight, Sprout } from "lucide-react-native";
 import { useState } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { notificationService } from "../src/services/notificationService";
-import { useSettingsStore } from "../src/store/useSettingsStore";
+import { notificationService } from "@/services/notificationService";
+import { useSettingsStore } from "@/store/useSettingsStore";
 import { useTranslation } from "react-i18next";
 
 export default function OnboardingRoute() {

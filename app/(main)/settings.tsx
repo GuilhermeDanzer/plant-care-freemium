@@ -4,14 +4,14 @@ import { Stack, useRouter } from "expo-router";
 import { useState } from "react";
 import { Alert, Platform, Pressable, StyleSheet, Switch, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { BackIcon, BellIcon, BellOffIcon } from "../../src/components/icons";
-import { notificationService } from "../../src/services/notificationService";
-import { usePlantStore } from "../../src/store/usePlantStore";
-import { useSettingsStore } from "../../src/store/useSettingsStore";
-import { shadowLayering, shadowBackButton } from "../../src/utils/shadows";
-import { showInfoToast, showSuccessToast, showErrorToast } from "../../src/utils/showToasts";
-import { useLanguage } from "../../src/hooks/useLanguage";
-import { authService } from "../../src/services/authService";
+import { BackIcon, BellIcon, BellOffIcon } from "@/components/icons";
+import { notificationService } from "@/services/notificationService";
+import { usePlantStore } from "@/store/usePlantStore";
+import { useSettingsStore } from "@/store/useSettingsStore";
+import { shadowLayering, shadowBackButton } from "@/utils/shadows";
+import { showInfoToast, showSuccessToast, showErrorToast } from "@/utils/showToasts";
+import { useLanguage } from "@/hooks/useLanguage";
+import { authService } from "@/services/authService";
 import { LogOut, Globe } from "lucide-react-native";
 
 export default function SettingsRoute() {

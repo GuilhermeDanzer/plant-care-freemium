@@ -5,12 +5,15 @@ import {
   TextInput, 
   TouchableOpacity, 
   ScrollView, 
-  Image, 
+  Image,
   KeyboardAvoidingView, 
   Platform 
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
 import { Camera, Image as ImageIcon } from "lucide-react-native";
+import { useTranslation } from "react-i18next";
+import { Input } from "@/components/ui/Input";
 
 export interface Plant {
   id?: string;
@@ -26,6 +29,7 @@ interface ManualAddScreenProps {
 }
 
 export function ManualAddScreen({ onSave, onCancel }: ManualAddScreenProps) {
+  const { t } = useTranslation();
   const [speciesName, setSpeciesName] = useState("");
   const [nickname, setNickname] = useState("");
   const [wateringFrequencyDays, setWateringFrequencyDays] = useState("7");
@@ -62,12 +66,12 @@ export function ManualAddScreen({ onSave, onCancel }: ManualAddScreenProps) {
   const validateAndSave = () => {
     const newErrors: { species?: string; watering?: string } = {};
     if (!speciesName.trim()) {
-      newErrors.species = "A espécie ou nome comum é obrigatório.";
+      newErrors.species = t("manualAdd.errorSpecies", "A espécie ou nome comum é obrigatório.");
     }
     
     const days = parseInt(wateringFrequencyDays, 10);
     if (isNaN(days) || days <= 0) {
-      newErrors.watering = "Frequência de rega inválida.";
+      newErrors.watering = t("manualAdd.errorWatering", "Frequência de rega inválida.");
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -84,10 +88,11 @@ export function ManualAddScreen({ onSave, onCancel }: ManualAddScreenProps) {
   };
 
   return (
-    <KeyboardAvoidingView 
-      behavior={Platform.OS === "ios" ? "padding" : "height"} 
-      className="flex-1 bg-slate-50"
-    >
+    <SafeAreaView edges={["top", "bottom"]} className="flex-1 bg-slate-50">
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === "ios" ? "padding" : "height"} 
+        className="flex-1"
+      >
       <ScrollView className="flex-1 p-6" contentContainerStyle={{ paddingBottom: 40 }}>
         
         {/* Image Selection */}
@@ -108,7 +113,7 @@ export function ManualAddScreen({ onSave, onCancel }: ManualAddScreenProps) {
               onPress={handleTakeImage}
             >
               <Camera color="#059669" size={16} />
-              <Text className="text-emerald-700 font-semibold text-sm">Câmera</Text>
+              <Text className="text-emerald-700 font-semibold text-sm">{t("manualAdd.camera", "Câmera")}</Text>
             </TouchableOpacity>
             
             <TouchableOpacity 
@@ -116,46 +121,40 @@ export function ManualAddScreen({ onSave, onCancel }: ManualAddScreenProps) {
               onPress={handlePickImage}
             >
               <ImageIcon color="#475569" size={16} />
-              <Text className="text-slate-700 font-semibold text-sm">Galeria</Text>
+              <Text className="text-slate-700 font-semibold text-sm">{t("manualAdd.gallery", "Galeria")}</Text>
             </TouchableOpacity>
           </View>
         </View>
 
         {/* Form Inputs */}
         <View className="mb-4">
-          <Text className="text-slate-700 font-bold mb-2 ml-1">Espécie / Nome da Planta *</Text>
-          <TextInput
-            className={`bg-white border ${errors.species ? 'border-red-400' : 'border-slate-200'} rounded-2xl p-4 text-base text-slate-800`}
-            placeholder="Ex: Costela de Adão, Zamioculca..."
-            placeholderTextColor="#94a3b8"
+          <Input
+            label={t("manualAdd.speciesLabel", "Espécie / Nome da Planta *")}
+            placeholder={t("manualAdd.speciesPlaceholder", "Ex: Costela de Adão, Zamioculca...")}
             value={speciesName}
             onChangeText={(text) => { setSpeciesName(text); setErrors(prev => ({...prev, species: undefined})); }}
+            error={errors.species}
           />
-          {errors.species && <Text className="text-red-500 text-xs mt-1 ml-1">{errors.species}</Text>}
         </View>
 
         <View className="mb-4">
-          <Text className="text-slate-700 font-bold mb-2 ml-1">Apelido (Opcional)</Text>
-          <TextInput
-            className="bg-white border border-slate-200 rounded-2xl p-4 text-base text-slate-800"
-            placeholder="Ex: Plantinha da Sala"
-            placeholderTextColor="#94a3b8"
+          <Input
+            label={t("manualAdd.nicknameLabel", "Apelido (Opcional)")}
+            placeholder={t("manualAdd.nicknamePlaceholder", "Ex: Plantinha da Sala")}
             value={nickname}
             onChangeText={setNickname}
           />
         </View>
 
         <View className="mb-8">
-          <Text className="text-slate-700 font-bold mb-2 ml-1">Regar a cada X dias *</Text>
-          <TextInput
-            className={`bg-white border ${errors.watering ? 'border-red-400' : 'border-slate-200'} rounded-2xl p-4 text-base text-slate-800`}
-            placeholder="Ex: 7"
-            placeholderTextColor="#94a3b8"
+          <Input
+            label={t("manualAdd.wateringLabel", "Regar a cada X dias *")}
+            placeholder={t("manualAdd.wateringPlaceholder", "Ex: 7")}
             keyboardType="numeric"
             value={wateringFrequencyDays}
             onChangeText={(text) => { setWateringFrequencyDays(text); setErrors(prev => ({...prev, watering: undefined})); }}
+            error={errors.watering}
           />
-          {errors.watering && <Text className="text-red-500 text-xs mt-1 ml-1">{errors.watering}</Text>}
         </View>
 
         {/* Actions */}
@@ -163,17 +162,18 @@ export function ManualAddScreen({ onSave, onCancel }: ManualAddScreenProps) {
           className="w-full bg-emerald-600 py-4 rounded-2xl items-center mb-3 shadow-sm"
           onPress={validateAndSave}
         >
-          <Text className="text-white font-bold text-lg">Salvar Planta</Text>
+          <Text className="text-white font-bold text-lg">{t("manualAdd.saveBtn", "Salvar Planta")}</Text>
         </TouchableOpacity>
         
         <TouchableOpacity
           className="w-full py-4 rounded-2xl items-center"
           onPress={onCancel}
         >
-          <Text className="text-slate-500 font-semibold text-base">Cancelar</Text>
+          <Text className="text-slate-500 font-semibold text-base">{t("manualAdd.cancelBtn", "Cancelar")}</Text>
         </TouchableOpacity>
 
       </ScrollView>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }

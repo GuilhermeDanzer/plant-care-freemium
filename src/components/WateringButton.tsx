@@ -2,11 +2,11 @@ import React, { useRef, useState } from "react";
 import { Animated, TouchableOpacity, View, Text } from "react-native";
 import * as Haptics from "expo-haptics";
 import { useTranslation } from "react-i18next";
-import { DropletAnimation } from "./DropletAnimation";
-import { DropletIcon } from "./icons";
-import { shadowLayering } from "../utils/shadows";
-import { usePlantStore } from "../store/usePlantStore";
-import { showSuccessToast } from "../utils/showToasts";
+import { DropletAnimation } from "@/components/DropletAnimation";
+import { DropletIcon } from "@/components/icons";
+import { shadowLayering } from "@/utils/shadows";
+import { usePlantStore } from "@/store/usePlantStore";
+import { showSuccessToast } from "@/utils/showToasts";
 
 interface WateringButtonProps {
   plantId: string;

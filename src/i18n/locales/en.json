@@ -13,6 +13,8 @@
     "passwordPlaceholder": "Minimum 6 characters"
   },
   "auth": {
+    "missingEmail": "Please enter your email.",
+    "passwordTooShort": "The password must have at least 6 characters.",
     "emailSentTitle": "Email sent",
     "emailSentBody": "Check your inbox to reset your password.",
     "welcomeBackTitle": "Welcome back",
@@ -173,7 +175,38 @@
     "takePhotoBtn": "Take photo",
     "galleryBtn": "Choose from gallery",
     "identifyBtn": "Identify Plant",
-    "limitReached": "Free plan limit reached."
+    "limitReached": "Free plan limit reached.",
+    "tipGoodLighting": "Good lighting, simple background, focus on one leaf or flower.",
+    "scanLimitTitle": "Scan Limit Reached",
+    "scanLimitFreeBody": "You have used your free scan! Upgrade to Premium for 10 scans per month.",
+    "scanLimitPremiumBody": "You have reached your 10 monthly AI scans. Wait until next month!",
+    "viewPremiumBtn": "View Premium Plans",
+    "maxPhotosTitle": "Limit reached",
+    "maxPhotosBody": "You can add up to 5 photos.",
+    "noPhotosTitle": "No photos",
+    "noPhotosBody": "Add at least one photo to identify.",
+    "noPhotosPlaceholder": "No photos yet",
+    "noPhotosPlaceholderSub": "Add up to 5 photos below",
+    "photosLabel": "Photos"
+  },
+  "setup": {
+    "title": "Set up your watering schedule",
+    "subtitle": "We recommend watering every {{days}} days. When did you last water this plant?",
+    "saveBtn": "Set Reminder & Save Plant",
+    "lastWateredLabel": "Last Watered"
+  },
+  "scanResult": {
+    "highConfidence": "\u2713 High Confidence Match",
+    "lowConfidence": "\u26a0\ufe0f Low Confidence \u2014 Check Alternatives",
+    "title": "Top Matches",
+    "subtitle": "Choose the one that matches your plant",
+    "bestMatch": "Best Match",
+    "confirmBtn": "This is my plant \u2713",
+    "healthTitle": "Health Assessment",
+    "healthyMsg": "Plant appears healthy!",
+    "issuesMsg": "Potential issues detected",
+    "healthDisclaimer": "\u26a0\ufe0f Always check soil and environment before applying any treatment.",
+    "cancelBtn": "\u2190 Try again with different photos"
   },
   "health": {
     "optimizationLabel": "Improvement opportunity",
@@ -270,5 +303,16 @@
     "wateringHeroFreq": "Frequency",
     "wateringHeroEveryDays": "Every {{count}} day",
     "wateringHeroEveryDays_plural": "Every {{count}} days"
+  },
+  "setup": {
+    "title": "Set up your watering schedule",
+    "subtitle": "We recommend watering every {{days}} days. When did you last water this plant?",
+    "lastWateredLabel": "Last Watered",
+    "saveBtn": "Set Reminder & Save Plant"
+  },
+  "manualAdd": {
+    "scientificNameDefault": "Manual Entry",
+    "notificationTitle": "Time to water your plant! 💧",
+    "notificationBody": "{{plantName}} is thirsty. Check the soil and give it some water today!"
   }
 }

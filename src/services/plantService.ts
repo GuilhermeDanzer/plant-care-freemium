@@ -1,11 +1,11 @@
 import { AxiosError } from "axios";
 import * as FileSystem from "expo-file-system/legacy";
-import { plantIdApi } from "../api/axiosClient";
+import { plantIdApi } from "@/api/axiosClient";
 import {
   HealthAssessmentResponse,
   IdentifiedPlant,
   WateringLevel,
-} from "../types/plant";
+} from "@/types/plant";
 
 /* =========================================================================
  * Helpers
@@ -194,24 +194,26 @@ export const plantService = {
    *   { images: [base64], health: "only", similar_images: true }
    */
   assessPlantHealth: async (
-    imageUri: string
+    imageUris: string[]
   ): Promise<HealthAssessmentResponse> => {
-    if (!imageUri) {
-      throw new Error("URI de imagem é obrigatória para o diagnóstico.");
+    if (!imageUris || imageUris.length === 0) {
+      throw new Error("Pelo menos uma URI de imagem é obrigatória para o diagnóstico.");
     }
 
-    const base64String = await convertToBase64(imageUri);
+    const base64Strings = await Promise.all(
+      imageUris.map((uri) => convertToBase64(uri))
+    );
 
     console.log(
       "[plantService.assessPlantHealth] → POST /health_assessment",
-      { imageUri, base64Bytes: base64String.length }
+      { imageUris, count: base64Strings.length }
     );
 
     try {
       const response = await plantIdApi.post<HealthAssessmentResponse>(
         "/health_assessment",
         {
-          images: [base64String],
+          images: base64Strings,
           health: "only",
           similar_images: true,
         },

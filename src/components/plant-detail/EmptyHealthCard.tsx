@@ -1,6 +1,6 @@
 import { View, Text } from "react-native";
-import { SparklesIcon } from "../icons";
-import { shadowLayering } from "../../utils/shadows";
+import { SparklesIcon } from "@/components/icons";
+import { shadowLayering } from "@/utils/shadows";
 import { useTranslation } from "react-i18next";
 
 /**

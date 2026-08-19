@@ -2,8 +2,8 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import * as Localization from 'expo-localization';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import ptBR from './locales/pt-BR.json';
-import en from './locales/en.json';
+import ptBR from '@/i18n/locales/pt-BR.json';
+import en from '@/i18n/locales/en.json';
 
 const LANGUAGE_KEY = '@app_language';
 const resources = { 'pt-BR': { translation: ptBR }, 'en': { translation: en } };

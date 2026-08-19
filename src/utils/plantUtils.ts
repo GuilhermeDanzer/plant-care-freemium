@@ -1,4 +1,4 @@
-import { PlantRecord } from "../types/plant";
+import { PlantRecord } from "@/types/plant";
 
 /**
  * Sempre prefere o apelido escolhido pelo usuário. Quando vazio, cai para o

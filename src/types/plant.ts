@@ -57,7 +57,7 @@ export interface HealthAssessmentResponse {
  * ========================================================================= */
 
 export interface PlantRecord {
-  id: number;
+  id: string;
   nickname: string | null;
   original_name: string;
   scientific_name: string;
@@ -71,4 +71,32 @@ export interface PlantRecord {
    * desserializamos para este shape.
    */
   health_data: HealthAssessmentResponse | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}
+
+export interface JournalEntry {
+  id: string;
+  plant_id: string;
+  image_uri: string;
+  note: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}
+
+/* =========================================================================
+ * Tasks
+ * ========================================================================= */
+
+export type TaskType = "REGAR" | "GIRAR" | "LIMPAR";
+export type TaskAction = "WATERED" | "SOIL_WET" | "DONE";
+
+export interface AppTask {
+  id: string;
+  plantId: string;
+  plantName: string;
+  type: TaskType;
+  dueDate: string;
 }

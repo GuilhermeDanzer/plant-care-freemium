@@ -1,5 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import type { AppUser } from "../types/plant";
+import type { AppUser } from "@/types/plant";
 
 const LOCAL_GUEST_ID_KEY = "plant_care_local_guest_id";
 

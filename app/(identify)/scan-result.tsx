@@ -1,9 +1,9 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useMemo } from "react";
 import { View, Text } from "react-native";
-import { ScanResultScreen } from "../../src/components/ScanResultScreen";
-import { plantService } from "../../src/services/plantService";
-import { KindwiseIdentificationResponse, KindwiseSuggestion } from "../../src/types/kindwise";
+import { ScanResultScreen } from "@/components/ScanResultScreen";
+import { plantService } from "@/services/plantService";
+import { KindwiseIdentificationResponse, KindwiseSuggestion } from "@/types/kindwise";
 
 export default function ScanResultRoute() {
   const router = useRouter();

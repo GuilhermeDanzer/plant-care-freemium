@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import Purchases from "react-native-purchases";
-import { authService } from "../services/authService";
-import { usePlantStore } from "../store/usePlantStore";
-import { AppUser } from "../types/plant";
+import { authService } from "@/services/authService";
+import { usePlantStore } from "@/store/usePlantStore";
+import { AppUser } from "@/types/plant";
+import { subscriptionService } from "@/services/subscriptionService";
 
 export interface UseAuthResult {
   user: AppUser | null;
@@ -40,9 +41,13 @@ export function useAuth(): UseAuthResult {
         if (current) {
           setUser(current);
           // Garante que o RC conhece este UUID, mesmo em boots subsequentes.
-          await Purchases.logIn(current.id).catch((e) =>
-            console.warn("[useAuth.logIn]", e)
-          );
+          const subStatus = await subscriptionService.loginUser(current.id);
+          usePlantStore.getState().setPremium(subStatus.isActive);
+
+          // Sincroniza dados pendentes com o Supabase ao retomar sessão.
+          if (!current.isAnonymous) {
+            usePlantStore.getState().syncDataWithSupabase();
+          }
         } else {
           // Sem sessão: cria um Guest anônimo no Supabase. O próprio
           // `signInAnonymously` do authService já chama Purchases.logIn
@@ -65,6 +70,12 @@ export function useAuth(): UseAuthResult {
         case "TOKEN_REFRESHED":
         case "USER_UPDATED":
           setUser(nextUser);
+          if (nextUser && !nextUser.isAnonymous) {
+            subscriptionService.loginUser(nextUser.id).then((subStatus) => {
+              usePlantStore.getState().setPremium(subStatus.isActive);
+            });
+            usePlantStore.getState().syncDataWithSupabase();
+          }
           break;
         case "SIGNED_OUT":
           setUser(null);

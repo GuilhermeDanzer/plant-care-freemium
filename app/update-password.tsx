@@ -15,10 +15,11 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { supabase } from "../src/lib/supabase";
-import { shadowCastEmerald, shadowLayering } from "../src/utils/shadows";
-import { showErrorToast, showSuccessToast } from "../src/utils/showToasts";
+import { supabase } from "@/lib/supabase";
+import { shadowCastEmerald, shadowLayering } from "@/utils/shadows";
+import { showErrorToast, showSuccessToast } from "@/utils/showToasts";
 import { useTranslation } from "react-i18next";
+import { Input } from "@/components/ui/Input";
 
 const LockIcon = Lock as unknown as ComponentType<{ color?: string; size?: number }>;
 const EyeIcon = Eye as unknown as ComponentType<{ color?: string; size?: number }>;
@@ -106,33 +107,29 @@ export default function UpdatePasswordRoute() {
               className="rounded-[28px] border border-slate-100 bg-white p-6"
               style={shadowLayering.core}
             >
-              <Text className="text-xs font-semibold uppercase tracking-[2px] text-slate-400">
-                {t("auth.newPasswordTitle")}
-              </Text>
-              <View className="mt-2 flex-row items-center rounded-2xl bg-slate-50 px-4 h-14">
-                <LockIcon color="#64748b" size={18} />
-                <TextInput
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry={!showPassword}
-                  autoCapitalize="none"
-                  placeholder={t("common.passwordPlaceholder")}
-                  placeholderTextColor="#94a3b8"
-                  className="ml-3 flex-1 h-full text-base text-slate-900"
-                  style={{ paddingVertical: 0 }}
-                />
-                <TouchableOpacity
-                  onPress={() => setShowPassword(!showPassword)}
-                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                  className="ml-2"
-                >
-                  {showPassword ? (
-                    <EyeOffIcon color="#64748b" size={18} />
-                  ) : (
-                    <EyeIcon color="#64748b" size={18} />
-                  )}
-                </TouchableOpacity>
-              </View>
+              <Input
+                label={t("auth.newPasswordTitle")}
+                icon={LockIcon}
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={!showPassword}
+                autoCapitalize="none"
+                placeholder={t("common.passwordPlaceholder")}
+                inputClassName="ml-0" // The standard input has ml-3 built in if there's an icon, wait, actually Input.tsx adds ml-3 only via the icon wrapper? No, Input.tsx doesn't add ml-3, it just adds mr-3 to the icon wrapper. So it's fine.
+                rightAccessory={
+                  <TouchableOpacity
+                    onPress={() => setShowPassword(!showPassword)}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                    className="ml-2"
+                  >
+                    {showPassword ? (
+                      <EyeOffIcon color="#64748b" size={18} />
+                    ) : (
+                      <EyeIcon color="#64748b" size={18} />
+                    )}
+                  </TouchableOpacity>
+                }
+              />
             </View>
           </View>
 

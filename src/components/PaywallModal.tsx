@@ -13,15 +13,15 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { subscriptionService } from "../services/subscriptionService";
-import { usePlantStore } from "../store/usePlantStore";
-import { PREMIUM_MONTHLY_PRICE } from "../utils/constants";
-import { shadowCastEmerald, shadowLayering } from "../utils/shadows";
+import { subscriptionService } from "@/services/subscriptionService";
+import { usePlantStore } from "@/store/usePlantStore";
+import { PREMIUM_MONTHLY_PRICE } from "@/utils/constants";
+import { shadowCastEmerald, shadowLayering } from "@/utils/shadows";
 import {
   showErrorToast,
   showInfoToast,
   showPremiumToast,
-} from "../utils/showToasts";
+} from "@/utils/showToasts";
 
 const GemIcon = Gem as unknown as ComponentType<{
   color?: string;

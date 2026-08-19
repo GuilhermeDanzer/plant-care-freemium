@@ -1,5 +1,5 @@
 import 'i18next';
-import ptBR from '../i18n/locales/pt-BR.json';
+import ptBR from '@/i18n/locales/pt-BR.json';
 
 declare module 'i18next' {
   interface CustomTypeOptions {

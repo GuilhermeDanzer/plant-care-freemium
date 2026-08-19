@@ -4,7 +4,7 @@ import { type ComponentType } from "react";
 import { useTranslation } from "react-i18next";
 import { ChevronRight, Gem } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { shadowCastEmerald } from "../utils/shadows";
+import { shadowCastEmerald } from "@/utils/shadows";
 
 const GemIcon = Gem as unknown as ComponentType<{
   color?: string;

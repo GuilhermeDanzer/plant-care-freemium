@@ -2,15 +2,15 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
-import { Platform } from "react-native";
+import { Platform, AppState, AppStateStatus } from "react-native";
 import Purchases, { LOG_LEVEL } from "react-native-purchases";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
-import { toastConfig } from "../src/components/ToastConfig";
-import { initDatabase } from "../src/database/db";
-import { useAuth } from "../src/hooks/useAuth";
-import { PREMIUM_ENTITLEMENT_ID } from "../src/services/subscriptionService";
-import { usePlantStore } from "../src/store/usePlantStore";
+import { toastConfig } from "@/components/ToastConfig";
+import { initDatabase } from "@/database/db";
+import { useAuth } from "@/hooks/useAuth";
+import { PREMIUM_ENTITLEMENT_ID } from "@/services/subscriptionService";
+import { usePlantStore } from "@/store/usePlantStore";
 import "../global.css";
 
 const queryClient = new QueryClient();
@@ -52,8 +52,19 @@ export default function RootLayout() {
     // Hidratação inicial — não espera o primeiro evento do listener.
     void usePlantStore.getState().syncSubscription();
 
+    const handleAppStateChange = (nextAppState: AppStateStatus) => {
+      if (nextAppState === "active") {
+        const state = usePlantStore.getState();
+        if (state.user && !state.user.isAnonymous) {
+          state.syncDataWithSupabase();
+        }
+      }
+    };
+    const subscription = AppState.addEventListener("change", handleAppStateChange);
+
     return () => {
       Purchases.removeCustomerInfoUpdateListener(updateListener);
+      subscription.remove();
     };
   }, []);
 

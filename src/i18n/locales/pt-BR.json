@@ -13,6 +13,8 @@
     "passwordPlaceholder": "Mínimo de 6 caracteres"
   },
   "auth": {
+    "missingEmail": "Por favor, insira seu email.",
+    "passwordTooShort": "A senha deve ter pelo menos 6 caracteres.",
     "emailSentTitle": "E-mail enviado",
     "emailSentBody": "Verifique sua caixa de entrada para redefinir a senha.",
     "welcomeBackTitle": "Bem-vindo de volta",
@@ -173,7 +175,38 @@
     "takePhotoBtn": "Tirar foto",
     "galleryBtn": "Escolher da galeria",
     "identifyBtn": "Identificar Planta",
-    "limitReached": "Limite do plano gratis atingido."
+    "limitReached": "Limite do plano grátis atingido.",
+    "tipGoodLighting": "Boa iluminação, fundo simples, foco em uma folha ou flor.",
+    "scanLimitTitle": "Limite de Escaneamentos Atingido",
+    "scanLimitFreeBody": "Você usou seu escaneamento gratuito! Assine o Premium para 10 escaneamentos por mês.",
+    "scanLimitPremiumBody": "Você atingiu seus 10 escaneamentos mensais com IA. Aguarde o próximo mês!",
+    "viewPremiumBtn": "Ver Planos Premium",
+    "maxPhotosTitle": "Limite atingido",
+    "maxPhotosBody": "Você pode adicionar até 5 fotos.",
+    "noPhotosTitle": "Sem fotos",
+    "noPhotosBody": "Adicione pelo menos uma foto para identificar.",
+    "noPhotosPlaceholder": "Nenhuma foto ainda",
+    "noPhotosPlaceholderSub": "Adicione até 5 fotos abaixo",
+    "photosLabel": "Fotos"
+  },
+  "setup": {
+    "title": "Configure seu cronograma de rega",
+    "subtitle": "Recomendamos regar a cada {{days}} dias. Quando você regou a planta pela última vez?",
+    "saveBtn": "Definir lembrete & Salvar planta",
+    "lastWateredLabel": "Última rega"
+  },
+  "scanResult": {
+    "highConfidence": "\u2713 Correspondência de Alta Confiança",
+    "lowConfidence": "\u26a0\ufe0f Baixa Confiança \u2014 Confira as Alternativas",
+    "title": "Melhores Correspondências",
+    "subtitle": "Escolha a que mais se parece com sua planta",
+    "bestMatch": "Melhor Correspondência",
+    "confirmBtn": "Essa é minha planta \u2713",
+    "healthTitle": "Diagnóstico de Saúde",
+    "healthyMsg": "Planta aparenta estar saudável!",
+    "issuesMsg": "Possíveis problemas detectados",
+    "healthDisclaimer": "\u26a0\ufe0f Sempre verifique o solo e o ambiente antes de aplicar qualquer tratamento.",
+    "cancelBtn": "\u2190 Tentar novamente com outras fotos"
   },
   "health": {
     "optimizationLabel": "Oportunidade de melhoria",
@@ -270,5 +303,16 @@
     "wateringHeroFreq": "Frequência",
     "wateringHeroEveryDays": "A cada {{count}} dia",
     "wateringHeroEveryDays_plural": "A cada {{count}} dias"
+  },
+  "setup": {
+    "title": "Configure seu cronograma de rega",
+    "subtitle": "Recomendamos regar a cada {{days}} dias. Quando foi a última vez que você regou esta planta?",
+    "lastWateredLabel": "Última rega",
+    "saveBtn": "Definir lembrete & salvar planta"
+  },
+  "manualAdd": {
+    "scientificNameDefault": "Adicionado Manualmente",
+    "notificationTitle": "Hora de regar sua planta! 💧",
+    "notificationBody": "{{plantName}} está com sede. Verifique a terra e dê um pouco de água hoje!"
   }
 }

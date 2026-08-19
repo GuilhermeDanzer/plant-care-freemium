@@ -1,8 +1,8 @@
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { GemIcon, LockIcon, SparklesIcon } from "../icons";
-import { shadowLayering } from "../../utils/shadows";
+import { GemIcon, LockIcon, SparklesIcon } from "@/components/icons";
+import { shadowLayering } from "@/utils/shadows";
 import { useTranslation } from "react-i18next";
 
 export interface BlurredHealthCardProps {

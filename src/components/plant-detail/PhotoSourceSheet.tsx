@@ -1,13 +1,15 @@
 import { Modal, Pressable, Text, TouchableOpacity, View } from "react-native";
-import { CameraIcon, GalleryIcon } from "../icons";
-import { shadowLayering } from "../../utils/shadows";
+import { CameraIcon, GalleryIcon } from "@/components/icons";
+import { shadowLayering } from "@/utils/shadows";
 import { useTranslation } from "react-i18next";
 
 export interface PhotoSourceSheetProps {
   visible: boolean;
   hasCurrentPhoto: boolean;
+  hideCurrentPhoto?: boolean;
   onUseCurrent: () => void;
   onNewPhoto: () => void;
+  onGalleryUpload: () => void;
   onClose: () => void;
 }
 
@@ -18,8 +20,10 @@ export interface PhotoSourceSheetProps {
 export function PhotoSourceSheet({
   visible,
   hasCurrentPhoto,
+  hideCurrentPhoto,
   onUseCurrent,
   onNewPhoto,
+  onGalleryUpload,
   onClose,
 }: PhotoSourceSheetProps) {
   const { t } = useTranslation();
@@ -49,29 +53,31 @@ export function PhotoSourceSheet({
                 {t("plantDetail.photoSheetSubtitle")}
               </Text>
 
-              <Pressable
-                onPress={onUseCurrent}
-                disabled={!hasCurrentPhoto}
-                className={`mt-5 flex-row items-center rounded-2xl border p-4 ${
-                  hasCurrentPhoto
-                    ? "border-emerald-100 bg-emerald-50/50"
-                    : "border-slate-100 bg-slate-50 opacity-60"
-                }`}
-              >
-                <View className="mr-3 rounded-full bg-white p-2.5">
-                  <GalleryIcon color="#10b981" size={18} />
-                </View>
-                <View className="flex-1">
-                  <Text className="text-sm font-bold tracking-tight text-slate-900">
-                    {t("plantDetail.photoSheetUseCurrentBtn")}
-                  </Text>
-                  <Text className="mt-0.5 text-xs text-slate-500">
-                    {hasCurrentPhoto
-                      ? t("plantDetail.photoSheetCurrentDescHas")
-                      : t("plantDetail.photoSheetCurrentDescNo")}
-                  </Text>
-                </View>
-              </Pressable>
+              {!hideCurrentPhoto && (
+                <Pressable
+                  onPress={onUseCurrent}
+                  disabled={!hasCurrentPhoto}
+                  className={`mt-5 flex-row items-center rounded-2xl border p-4 ${
+                    hasCurrentPhoto
+                      ? "border-emerald-100 bg-emerald-50/50"
+                      : "border-slate-100 bg-slate-50 opacity-60"
+                  }`}
+                >
+                  <View className="mr-3 rounded-full bg-white p-2.5">
+                    <GalleryIcon color="#10b981" size={18} />
+                  </View>
+                  <View className="flex-1">
+                    <Text className="text-sm font-bold tracking-tight text-slate-900">
+                      {t("plantDetail.photoSheetUseCurrentBtn")}
+                    </Text>
+                    <Text className="mt-0.5 text-xs text-slate-500">
+                      {hasCurrentPhoto
+                        ? t("plantDetail.photoSheetCurrentDescHas")
+                        : t("plantDetail.photoSheetCurrentDescNo")}
+                    </Text>
+                  </View>
+                </Pressable>
+              )}
 
               <Pressable
                 onPress={onNewPhoto}
@@ -87,6 +93,24 @@ export function PhotoSourceSheet({
                   </Text>
                   <Text className="mt-0.5 text-xs text-slate-500">
                     {t("plantDetail.photoSheetNewPhotoDesc")}
+                  </Text>
+                </View>
+              </Pressable>
+
+              <Pressable
+                onPress={onGalleryUpload}
+                className="mt-3 flex-row items-center rounded-2xl border border-slate-100 bg-white p-4"
+                style={shadowLayering.core}
+              >
+                <View className="mr-3 rounded-full bg-blue-500 p-2.5">
+                  <GalleryIcon color="#ffffff" size={18} />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-sm font-bold tracking-tight text-slate-900">
+                    {t("identify.galleryBtn")}
+                  </Text>
+                  <Text className="mt-0.5 text-xs text-slate-500">
+                    {t("identify.subtitle")}
                   </Text>
                 </View>
               </Pressable>

@@ -6,15 +6,20 @@ import {
   insertPlant,
   InsertPlantInput,
   markWateredAt,
+  snoozeWateringAt,
   saveHealthCheck,
   updatePlantRecord,
   UpdatePlantInput,
-} from "../database/db";
-import { authService } from "../services/authService";
-import { plantService } from "../services/plantService";
-import { subscriptionService } from "../services/subscriptionService";
-import { AppUser, HealthAssessmentResponse, PlantRecord } from "../types/plant";
-import { FREE_PLANT_LIMIT } from "../utils/constants";
+  insertJournalEntry,
+  getJournalEntriesForPlant,
+  deleteJournalEntry
+} from "@/database/db";
+import { authService } from "@/services/authService";
+import { plantService } from "@/services/plantService";
+import { subscriptionService } from "@/services/subscriptionService";
+import { AppUser, HealthAssessmentResponse, PlantRecord, JournalEntry } from "@/types/plant";
+import { performFullSync } from "@/services/SyncService";
+import { FREE_PLANT_LIMIT } from "@/utils/constants";
 
 interface PlantStoreState {
   plants: PlantRecord[];
@@ -29,13 +34,18 @@ interface PlantStoreState {
 
   loadPlants: (options?: { showLoading?: boolean }) => Promise<void>;
   addPlant: (payload: InsertPlantInput) => Promise<boolean>;
-  deletePlant: (plantId: number) => Promise<void>;
-  waterPlant: (plantId: number) => Promise<void>;
-  updatePlant: (plantId: number, data: UpdatePlantInput) => Promise<void>;
+  deletePlant: (plantId: string) => Promise<void>;
+  waterPlant: (plantId: string) => Promise<void>;
+  snoozePlant: (plantId: string) => Promise<void>;
+  updatePlant: (plantId: string, data: UpdatePlantInput) => Promise<void>;
   checkHealth: (
-    plantId: number,
-    imageUri: string
+    plantId: string,
+    imageUris: string[]
   ) => Promise<HealthAssessmentResponse | null>;
+
+  addJournalEntry: (plantId: string, imageUri: string, note?: string) => Promise<void>;
+  deleteJournalEntry: (id: string) => Promise<void>;
+  getJournalForPlant: (plantId: string) => Promise<JournalEntry[]>;
 
   setPremium: (value: boolean) => void;
   setUser: (user: AppUser | null) => void;
@@ -78,38 +88,63 @@ export const usePlantStore = create<PlantStoreState>((set, get) => ({
     // Ticket 2: Removed FREE_PLANT_LIMIT for manual additions
     await insertPlant(payload);
     await get().loadPlants({ showLoading: false });
+    await get().syncDataWithSupabase();
     return true;
   },
 
   deletePlant: async (plantId) => {
     await deletePlantById(plantId);
     await get().loadPlants({ showLoading: false });
+    await get().syncDataWithSupabase();
   },
 
   waterPlant: async (plantId) => {
     await markWateredAt(plantId, new Date());
     await get().loadPlants({ showLoading: false });
+    await get().syncDataWithSupabase();
+  },
+
+  snoozePlant: async (plantId) => {
+    await snoozeWateringAt(plantId, 2);
+    await get().loadPlants({ showLoading: false });
+    await get().syncDataWithSupabase();
   },
 
   updatePlant: async (plantId, data) => {
     await updatePlantRecord(plantId, data);
     await get().loadPlants({ showLoading: false });
+    await get().syncDataWithSupabase();
   },
 
-  checkHealth: async (plantId, imageUri) => {
+  checkHealth: async (plantId, imageUris) => {
     const { isPremium } = get();
     if (!isPremium) return null;
-    if (!imageUri) return null;
+    if (!imageUris || imageUris.length === 0) return null;
 
     try {
-      const result = await plantService.assessPlantHealth(imageUri);
+      const result = await plantService.assessPlantHealth(imageUris);
       await saveHealthCheck(plantId, result, new Date());
       await get().loadPlants({ showLoading: false });
+      await get().syncDataWithSupabase();
       return result;
     } catch (error) {
       console.error("[usePlantStore] checkHealth falhou.", error);
       return null;
     }
+  },
+
+  addJournalEntry: async (plantId, imageUri, note) => {
+    await insertJournalEntry(plantId, imageUri, note || null);
+    await get().syncDataWithSupabase();
+  },
+
+  deleteJournalEntry: async (id) => {
+    await deleteJournalEntry(id);
+    await get().syncDataWithSupabase();
+  },
+
+  getJournalForPlant: async (plantId) => {
+    return await getJournalEntriesForPlant(plantId);
   },
 
   // Setter puro. O RevenueCat é a fonte da verdade — o listener global em
@@ -144,16 +179,28 @@ export const usePlantStore = create<PlantStoreState>((set, get) => ({
       return;
     }
 
+    // Skip sync for anonymous users — they have no Supabase row-level
+    // security entitlement. Only real accounts sync to the cloud.
+    if (user.isAnonymous) {
+      console.log(
+        "[syncDataWithSupabase] Usuário anônimo. Sincronização ignorada."
+      );
+      return;
+    }
+
     console.log(
-      `Iniciando sincronização para o usuário ${user.id}...`
+      `[syncDataWithSupabase] Iniciando sincronização para o usuário ${user.id}...`
     );
 
-    // TODO: Substituir pelo merge local-first:
-    //   1. Buscar plants do Supabase (last_synced_at do usuário).
-    //   2. Fazer diff com o SQLite local (last_watered_at/updated_at por planta).
-    //   3. Resolver conflitos via LWW (last-write-wins).
-    //   4. Upload das mudanças locais novas.
+    try {
+      const lastSyncedAtIso = get().lastSyncedAt?.toISOString() || null;
+      const newSyncTime = await performFullSync(user.id, lastSyncedAtIso);
+      set({ lastSyncedAt: new Date(newSyncTime) });
 
-    set({ lastSyncedAt: new Date() });
+      // Reload plants from SQLite to reflect any remote changes pulled down.
+      await get().loadPlants({ showLoading: false });
+    } catch (error) {
+      console.error("[usePlantStore] syncDataWithSupabase failed:", error);
+    }
   },
 }));

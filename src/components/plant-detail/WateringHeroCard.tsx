@@ -1,9 +1,9 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { StyleSheet, Text, View } from "react-native";
-import { DropletIcon, SproutIcon } from "../icons";
-import { formatFriendlyDate } from "../../utils/dateUtils";
-import type { WateringCountdownDetail } from "../../utils/dateUtils";
-import { shadowLayering } from "../../utils/shadows";
+import { DropletIcon, SproutIcon } from "@/components/icons";
+import { formatFriendlyDate } from "@/utils/dateUtils";
+import type { WateringCountdownDetail } from "@/utils/dateUtils";
+import { shadowLayering } from "@/utils/shadows";
 import { useTranslation } from "react-i18next";
 
 export interface WateringHeroCardProps {

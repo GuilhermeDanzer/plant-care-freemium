@@ -3,7 +3,7 @@
  * Pure business logic for interpreting plant health assessment API responses.
  * No React dependencies — fully unit-testable in isolation.
  */
-import { DiseaseSuggestion, HealthAssessmentResponse } from "../types/plant";
+import { DiseaseSuggestion, HealthAssessmentResponse } from "@/types/plant";
 
 export type HealthState = "perfect" | "optimization" | "critical";
 

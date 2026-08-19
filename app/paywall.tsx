@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { PaywallModal } from "../src/components/PaywallModal";
+import { PaywallModal } from "@/components/PaywallModal";
 
 export default function PaywallRoute() {
   const router = useRouter();

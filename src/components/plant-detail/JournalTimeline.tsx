@@ -1,8 +1,8 @@
 import { ActivityIndicator, Image, Text, TouchableOpacity, View } from "react-native";
-import { BookIcon, PlusIcon } from "../icons";
-import type { JournalEntry } from "../../types/plant";
-import { formatFriendlyDate } from "../../utils/dateUtils";
-import { shadowLayering } from "../../utils/shadows";
+import { BookIcon, PlusIcon } from "@/components/icons";
+import type { JournalEntry } from "@/types/plant";
+import { formatFriendlyDate } from "@/utils/dateUtils";
+import { shadowLayering } from "@/utils/shadows";
 import { useTranslation } from "react-i18next";
 
 export interface JournalTimelineProps {

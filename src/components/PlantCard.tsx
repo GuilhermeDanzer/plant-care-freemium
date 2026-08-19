@@ -1,10 +1,10 @@
 import { memo, type ComponentType, useEffect, useRef } from "react";
 import { Sprout, X } from "lucide-react-native";
 import { Animated, Pressable, Text, View } from "react-native";
-import { PlantRecord } from "../types/plant";
-import { getWateringCountdownLabel } from "../utils/dateUtils";
-import { getPlantDisplayName } from "../utils/plantUtils";
-import { shadowLayering } from "../utils/shadows";
+import { PlantRecord } from "@/types/plant";
+import { getWateringCountdownLabel } from "@/utils/dateUtils";
+import { getPlantDisplayName } from "@/utils/plantUtils";
+import { shadowLayering } from "@/utils/shadows";
 
 const SproutIcon = Sprout as unknown as ComponentType<{ color?: string; size?: number }>;
 const CloseIcon = X as unknown as ComponentType<{ color?: string; size?: number }>;
@@ -12,8 +12,8 @@ const CloseIcon = X as unknown as ComponentType<{ color?: string; size?: number 
 export interface PlantCardProps {
   plant: PlantRecord;
   isEditing: boolean;
-  onDelete: (plantId: number, plantName: string) => void;
-  onPress?: (plantId: number) => void;
+  onDelete: (plantId: string, plantName: string) => void;
+  onPress?: (plantId: string) => void;
 }
 
 export const PlantCard = memo(function PlantCard({

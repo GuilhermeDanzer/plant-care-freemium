@@ -1,6 +1,6 @@
 import * as Notifications from "expo-notifications";
-import { useSettingsStore } from "../store/useSettingsStore";
-import { PlantRecord } from "../types/plant";
+import { useSettingsStore } from "@/store/useSettingsStore";
+import { PlantRecord } from "@/types/plant";
 
 export const notificationService = {
   requestPermissions: async (): Promise<boolean> => {

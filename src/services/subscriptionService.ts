@@ -54,6 +54,16 @@ export const subscriptionService = {
     }
   },
 
+  loginUser: async (userId: string): Promise<SubscriptionStatus> => {
+    try {
+      const { customerInfo } = await Purchases.logIn(userId);
+      return toStatus(customerInfo);
+    } catch (error) {
+      console.warn("[subscriptionService.loginUser]", error);
+      return INACTIVE_STATUS;
+    }
+  },
+
   /**
    * Dispara a compra do pacote mensal da offering corrente.
    * Cancelamento do usuário é tratado silenciosamente — devolvemos o status

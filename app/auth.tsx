@@ -5,6 +5,7 @@ import { type ComponentType, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -16,17 +17,18 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { authService } from "../src/services/authService";
-import { usePlantStore } from "../src/store/usePlantStore";
+import { authService } from "@/services/authService";
+import { usePlantStore } from "@/store/usePlantStore";
+import { Input } from "@/components/ui/Input";
 import {
   shadowCastEmerald,
   shadowLayering,
-} from "../src/utils/shadows";
+} from "@/utils/shadows";
 import {
   showErrorToast,
   showInfoToast,
   showSuccessToast,
-} from "../src/utils/showToasts";
+} from "@/utils/showToasts";
 
 type Mode = "signIn" | "signUp";
 
@@ -64,7 +66,19 @@ export default function AuthRoute() {
   };
 
   const handleSubmit = async () => {
-    if (!canSubmit) return;
+    Keyboard.dismiss()
+    if (isSubmitting) return;
+
+    if (emailTrimmed.length === 0) {
+      showErrorToast(t("auth.error"), "Por favor, insira seu email.");
+      return;
+    }
+
+    if (password.length < 6) {
+      showErrorToast(t("auth.error"), "A senha deve ter pelo menos 6 caracteres.");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       if (isSignIn) {
@@ -95,9 +109,17 @@ export default function AuthRoute() {
       setUser(user);
       showSuccessToast(t("auth.accountCreatedTitle"), user.email ?? undefined);
       dismiss();
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : t("auth.unableToContinue");
+    } catch (error: any) {
+      console.warn("Auth Error:", error);
+      let message = error?.message || t("auth.unableToContinue");
+
+      // Traduz os erros do Supabase para PT-BR
+      if (message.toLowerCase().includes("already registered")) {
+        message = t("auth.userAlreadyRegistered", "Este email já está cadastrado. Tente fazer login.");
+      } else if (message.toLowerCase().includes("invalid login credentials")) {
+        message = t("auth.invalidCredentials", "Email ou senha incorretos.");
+      }
+
       showErrorToast(
         isSignIn ? t("auth.loginFailed") : t("auth.signUpFailed"),
         message
@@ -163,49 +185,38 @@ export default function AuthRoute() {
               className="rounded-[28px] border border-slate-100 bg-white p-6"
               style={shadowLayering.core}
             >
-              <Text className="text-xs font-semibold uppercase tracking-[2px] text-slate-400">
-                {t("common.emailLabel")}
-              </Text>
-              <View className="mt-2 flex-row items-center rounded-2xl bg-slate-50 px-4">
-                <MailIcon color="#64748b" size={18} />
-                <TextInput
-                  value={email}
-                  onChangeText={setEmail}
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  autoComplete="email"
-                  keyboardType="email-address"
-                  placeholder={t("common.emailPlaceholder")}
-                  placeholderTextColor="#94a3b8"
-                  className="ml-3 flex-1 py-4 text-base text-slate-900"
-                />
-              </View>
+              <Input
+                label={t("common.emailLabel")}
+                icon={MailIcon}
+                value={email}
+                onChangeText={setEmail}
+                autoCapitalize="none"
+                autoCorrect={false}
+                autoComplete="email"
+                keyboardType="email-address"
+                placeholder={t("common.emailPlaceholder")}
+              />
 
-              <Text className="mt-5 text-xs font-semibold uppercase tracking-[2px] text-slate-400">
-                {t("common.passwordLabel")}
-              </Text>
-              <View className="mt-2 flex-row items-center rounded-2xl bg-slate-50 px-4">
-                <LockIcon color="#64748b" size={18} />
-                <TextInput
+              <View className="mt-6">
+                <Input
+                  label={t("common.passwordLabel")}
+                  icon={LockIcon}
                   value={password}
                   onChangeText={setPassword}
                   secureTextEntry
                   autoCapitalize="none"
                   autoComplete={isSignIn ? "current-password" : "new-password"}
                   placeholder={t("common.passwordPlaceholder")}
-                  placeholderTextColor="#94a3b8"
-                  className="ml-3 flex-1 py-4 text-base text-slate-900"
                 />
               </View>
             </View>
           </View>
 
           <TouchableOpacity
-            disabled={!canSubmit}
             onPress={() => void handleSubmit()}
             className="mt-6 overflow-hidden rounded-2xl"
             activeOpacity={0.9}
-            style={[shadowCastEmerald, !canSubmit && { opacity: 0.5 }]}
+            style={shadowCastEmerald}
           >
             <LinearGradient
               colors={["#064e3b", "#0f766e"]}

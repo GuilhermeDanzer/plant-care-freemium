@@ -8,8 +8,8 @@ import {
   Sun,
 } from "lucide-react-native";
 import { Text, View } from "react-native";
-import { DiseaseSuggestion } from "../types/plant";
-import { shadowLayering } from "../utils/shadows";
+import { DiseaseSuggestion } from "@/types/plant";
+import { shadowLayering } from "@/utils/shadows";
 
 type IconComponent = ComponentType<{ color?: string; size?: number }>;
 

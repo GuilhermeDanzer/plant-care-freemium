@@ -5,14 +5,13 @@ import { useTranslation } from "react-i18next";
 import { ArrowLeft, Camera, Image as ImageIcon } from "lucide-react-native";
 import { Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useIdentifyPlant } from "../../src/hooks/useIdentifyPlant";
-import { usePlantStore } from "../../src/store/usePlantStore";
-import { FREE_PLANT_LIMIT } from "../../src/utils/constants";
-import { showErrorToast, showInfoToast } from "../../src/utils/showToasts";
+import { useIdentifyPlant } from "@/hooks/useIdentifyPlant";
+import { usePlantStore } from "@/store/usePlantStore";
+import { FREE_PLANT_LIMIT } from "@/utils/constants";
+import { showErrorToast, showInfoToast } from "@/utils/showToasts";
 
 const CameraIcon = Camera as unknown as ComponentType<{ color?: string; size?: number }>;
 const GalleryIcon = ImageIcon as unknown as ComponentType<{ color?: string; size?: number }>;
-const BackIcon = ArrowLeft as unknown as ComponentType<{ color?: string; size?: number }>;
 
 export default function IdentifyRoute() {
   const { t } = useTranslation();
@@ -51,7 +50,7 @@ export default function IdentifyRoute() {
       const result = await ImagePicker.launchCameraAsync({
         mediaTypes: ["images"],
         quality: 0.6,
-        allowsEditing: true,
+        allowsEditing: false,
       });
 
       if (result.canceled || !result.assets[0]?.uri) return;
@@ -92,13 +91,13 @@ export default function IdentifyRoute() {
 
   return (
     <SafeAreaView edges={["top", "bottom"]} className="flex-1 bg-slate-50">
-      <View className="absolute left-6 top-6 z-10 mt-12">
+      <View className="flex-row items-center px-6 pt-4">
         <TouchableOpacity
           onPress={() => router.back()}
           className="h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm"
           style={{ elevation: 4 }}
         >
-          <BackIcon color="#0f172a" size={20} />
+          <ArrowLeft color="#0f172a" size={20} />
         </TouchableOpacity>
       </View>
       <View className="flex-1 justify-center p-6">

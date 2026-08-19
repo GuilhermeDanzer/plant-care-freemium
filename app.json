@@ -35,7 +35,14 @@
       "expo-sqlite",
       "@react-native-community/datetimepicker",
       "expo-router",
-      "expo-localization"
+      "expo-localization",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "The app needs to access your photos to identify plants and save to your journal.",
+          "cameraPermission": "The app needs to access your camera to take photos of your plants."
+        }
+      ]
     ],
     "extra": {
       "router": {},

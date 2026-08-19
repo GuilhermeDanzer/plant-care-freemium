@@ -8,12 +8,12 @@ import { Platform, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as Notifications from "expo-notifications";
 import { Droplet } from "lucide-react-native";
-import { usePlantStore } from "../../src/store/usePlantStore";
-import { IdentifiedPlant } from "../../src/types/plant";
+import { usePlantStore } from "@/store/usePlantStore";
+import { IdentifiedPlant } from "@/types/plant";
 import {
   calculateNextWateringAt,
   mapWateringLevelToDays,
-} from "../../src/utils/dateUtils";
+} from "@/utils/dateUtils";
 
 // Configure notifications to show alert when app is in foreground
 Notifications.setNotificationHandler({
@@ -123,10 +123,10 @@ export default function SetupRoute() {
             <Droplet color="#3b82f6" size={32} />
           </View>
           <Text className="text-xl font-bold text-slate-800 text-center">
-            Set up your watering schedule
+            {t('setup.title')}
           </Text>
           <Text className="text-center text-slate-500 mt-2 px-4">
-            We recommend watering every {wateringFrequencyDays} days. When did you last water this plant?
+            {t('setup.subtitle', { days: wateringFrequencyDays })}
           </Text>
         </View>
 
@@ -134,7 +134,7 @@ export default function SetupRoute() {
           className="mt-6 rounded-2xl border-2 border-blue-200 bg-white p-5 flex-row justify-between items-center shadow-sm"
           onPress={() => setShowPicker(true)}
         >
-          <Text className="text-slate-500 font-medium text-lg">Last Watered</Text>
+          <Text className="text-slate-500 font-medium text-lg">{t('setup.lastWateredLabel')}</Text>
           <Text className="text-blue-600 font-bold text-lg">{lastWateredAt.toLocaleDateString("pt-BR")}</Text>
         </TouchableOpacity>
 
@@ -153,7 +153,7 @@ export default function SetupRoute() {
             onPress={() => void savePlant()}
           >
             <Text className="text-center text-lg font-bold text-white">
-              Set Reminder & Save Plant
+              {t('setup.saveBtn')}
             </Text>
           </TouchableOpacity>
         </View>
