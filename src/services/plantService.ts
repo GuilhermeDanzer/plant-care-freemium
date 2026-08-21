@@ -1,5 +1,6 @@
 import { AxiosError } from "axios";
 import * as FileSystem from "expo-file-system/legacy";
+import * as ImageManipulator from "expo-image-manipulator";
 import { plantIdApi } from "@/api/axiosClient";
 import {
   HealthAssessmentResponse,
@@ -11,23 +12,26 @@ import {
  * Helpers
  * ========================================================================= */
 
-const DEFAULT_IMAGE_MIME_TYPE = "image/jpeg";
-
-const inferMimeType = (uri: string): string => {
-  const normalized = uri.toLowerCase();
-  if (normalized.endsWith(".png")) return "image/png";
-  if (normalized.endsWith(".webp")) return "image/webp";
-  if (normalized.endsWith(".heic")) return "image/heic";
-  if (normalized.endsWith(".heif")) return "image/heif";
-  return DEFAULT_IMAGE_MIME_TYPE;
-};
-
 const convertToBase64 = async (uri: string): Promise<string> => {
-  const base64 = await FileSystem.readAsStringAsync(uri, {
+  // Compress and resize the image to ensure it's a valid JPEG and reduce payload size.
+  // This also fixes HEIC issues on iOS since Kindwise only supports JPEG, PNG, WEBP.
+  const manipResult = await ImageManipulator.manipulateAsync(
+    uri,
+    [{ resize: { width: 1024 } }],
+    { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG, base64: true }
+  );
+
+  if (manipResult.base64) {
+    // Kindwise Plant.id v3 prefers the raw base64 string without the data URI scheme
+    return manipResult.base64;
+  }
+
+  // Fallback
+  const base64 = await FileSystem.readAsStringAsync(manipResult.uri, {
     encoding: FileSystem.EncodingType.Base64,
   });
-  const mimeType = inferMimeType(uri);
-  return `data:${mimeType};base64,${base64}`;
+  
+  return base64;
 };
 
 const logAxiosError = (scope: string, error: unknown): void => {

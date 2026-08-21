@@ -15,7 +15,7 @@ export interface TaskStoreState {
   ) => Promise<void>;
 
   showMilestoneModal: boolean;
-  milestonePlantId: number | null;
+  milestonePlantId: string | null;
   milestoneValue: number | null;
   closeMilestoneModal: () => void;
   setProfileData: (careStreak: number, lastActionDate: string | null) => void;
@@ -41,6 +41,15 @@ export const useTaskStore = create<TaskStoreState>()(
         const todayUtc = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
 
         let newStreak = state.careStreak;
+        let shouldIncrementStreak = false;
+
+        const plantStore = usePlantStore.getState();
+        const plant = plantStore.plants.find(p => p.id === plantId);
+        
+        let needsWatering = false;
+        if (plant) {
+          needsWatering = now >= new Date(plant.next_watering_at);
+        }
 
         if (state.lastActionDate) {
           const lastAction = new Date(state.lastActionDate);
@@ -55,20 +64,29 @@ export const useTaskStore = create<TaskStoreState>()(
           );
 
           if (diffDays === 1) {
-            // Yesterday, increment streak
-            newStreak += 1;
+            // Yesterday. Increment streak ONLY if the plant actually needs watering 
+            // (or if it's not a watering task, but for this context it's primarily watering)
+            if (taskType === "REGAR" && actionType === "WATERED" && !needsWatering) {
+               // Premature watering: keep streak as is
+               shouldIncrementStreak = false;
+            } else {
+               shouldIncrementStreak = true;
+            }
           } else if (diffDays > 1) {
-            // Missed a day, reset to 1
+            // Missed a day, reset to 1 (or 0 if they watered prematurely on a reset day? 
+            // Usually missed a day means streak is lost. Let's just start a new streak.)
             newStreak = 1;
+            shouldIncrementStreak = false; // Already reset to 1
           }
           // if diffDays === 0, already acted today, streak stays the same
         } else {
           // First action ever
-          newStreak = 1;
+          shouldIncrementStreak = true;
         }
 
-        // Perform the plant action via usePlantStore
-        const plantStore = usePlantStore.getState();
+        if (shouldIncrementStreak) {
+          newStreak += 1;
+        }
 
         if (taskType === "REGAR") {
           if (actionType === "WATERED") {

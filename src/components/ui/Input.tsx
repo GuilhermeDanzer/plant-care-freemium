@@ -8,6 +8,7 @@ interface InputProps extends TextInputProps {
   inputClassName?: string;
   rightAccessory?: React.ReactNode;
   error?: string;
+  InputComponent?: any;
 }
 
 export const Input: React.FC<InputProps> = ({
@@ -17,6 +18,7 @@ export const Input: React.FC<InputProps> = ({
   inputClassName = "",
   rightAccessory,
   error,
+  InputComponent = TextInput,
   ...props
 }) => {
   return (
@@ -36,7 +38,7 @@ export const Input: React.FC<InputProps> = ({
             <Icon color={error ? "#f87171" : "#64748b"} size={20} />
           </View>
         )}
-        <TextInput
+        <InputComponent
           placeholderTextColor="#94a3b8"
           className={`flex-1 h-full py-0 text-base text-slate-900 ${inputClassName}`}
           style={{ paddingVertical: 0 }}

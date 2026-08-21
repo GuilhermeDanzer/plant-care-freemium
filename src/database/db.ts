@@ -211,8 +211,7 @@ export const getPlantById = async (id: string): Promise<PlantRecord | null> => {
 
 export const deletePlantById = async (plantId: string): Promise<void> => {
   const db = await getDatabase();
-  const now = new Date().toISOString();
-  await db.runAsync(`UPDATE ${TABLE_NAME} SET deleted_at = ?, updated_at = ? WHERE id = ?`, [now, now, plantId]);
+  await db.runAsync(`DELETE FROM ${TABLE_NAME} WHERE id = ?`, [plantId]);
 };
 
 export const markWateredAt = async (
@@ -342,8 +341,7 @@ export const getJournalEntriesForPlant = async (plantId: string): Promise<Journa
 
 export const deleteJournalEntry = async (id: string): Promise<void> => {
   const db = await getDatabase();
-  const now = new Date().toISOString();
-  await db.runAsync(`UPDATE ${JOURNAL_TABLE} SET deleted_at = ?, updated_at = ? WHERE id = ?`, [now, now, id]);
+  await db.runAsync(`DELETE FROM ${JOURNAL_TABLE} WHERE id = ?`, [id]);
 };
 
 /* =========================================================================

@@ -1,15 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useMemo, useEffect, useCallback } from "react";
 import { 
   View, 
   Text, 
-  TextInput, 
   TouchableOpacity, 
-  ScrollView, 
   Image,
-  KeyboardAvoidingView, 
-  Platform 
+  Platform,
+  Modal,
+  ScrollView,
+  KeyboardAvoidingView
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
 import { Camera, Image as ImageIcon } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
@@ -88,12 +87,27 @@ export function ManualAddScreen({ onSave, onCancel }: ManualAddScreenProps) {
   };
 
   return (
-    <SafeAreaView edges={["top", "bottom"]} className="flex-1 bg-slate-50">
+    <Modal
+      visible={true}
+      animationType="slide"
+      transparent={true}
+      onRequestClose={onCancel}
+    >
       <KeyboardAvoidingView 
-        behavior={Platform.OS === "ios" ? "padding" : "height"} 
-        className="flex-1"
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
       >
-      <ScrollView className="flex-1 p-6" contentContainerStyle={{ paddingBottom: 40 }}>
+        <View className="flex-1 justify-end bg-black/50">
+          <TouchableOpacity 
+            className="flex-1" 
+            activeOpacity={1} 
+            onPress={onCancel} 
+          />
+          <View className="bg-[#f8fafc] rounded-t-3xl max-h-[90%] w-full">
+            <View className="items-center mt-3 mb-2">
+              <View className="w-12 h-1.5 bg-slate-300 rounded-full" />
+            </View>
+            <ScrollView className="p-6" contentContainerStyle={{ paddingBottom: 40 }}>
         
         {/* Image Selection */}
         <View className="items-center mb-8">
@@ -172,8 +186,10 @@ export function ManualAddScreen({ onSave, onCancel }: ManualAddScreenProps) {
           <Text className="text-slate-500 font-semibold text-base">{t("manualAdd.cancelBtn", "Cancelar")}</Text>
         </TouchableOpacity>
 
-      </ScrollView>
+            </ScrollView>
+          </View>
+        </View>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </Modal>
   );
 }

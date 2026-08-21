@@ -1,4 +1,8 @@
 import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as FileSystem from "expo-file-system";
+import { supabase } from "@/lib/supabase";
 import {
   countMyPlants,
   deletePlantById,
@@ -61,8 +65,10 @@ interface PlantStoreState {
   syncDataWithSupabase: () => Promise<void>;
 }
 
-export const usePlantStore = create<PlantStoreState>((set, get) => ({
-  plants: [],
+export const usePlantStore = create<PlantStoreState>()(
+  persist(
+    (set, get) => ({
+      plants: [],
   isLoading: false,
   hasLoaded: false,
   isPremium: false,
@@ -93,8 +99,32 @@ export const usePlantStore = create<PlantStoreState>((set, get) => ({
   },
 
   deletePlant: async (plantId) => {
+    // A) Remote Delete: Trigger Supabase remote deletion FIRST
+    try {
+      await supabase.from("plants").delete().eq("id", plantId);
+    } catch (e) {
+      console.warn("[deletePlant] Failed remote delete:", e);
+    }
+
+    // B) SQLite deletion: Hard delete locally
     await deletePlantById(plantId);
-    await get().loadPlants({ showLoading: false });
+
+    // C) FileSystem local image deletion
+    const plant = get().plants.find((p) => p.id === plantId);
+    if (plant?.image_uri && plant.image_uri.startsWith("file://")) {
+      try {
+        await FileSystem.deleteAsync(plant.image_uri, { idempotent: true });
+      } catch (e) {
+        console.warn("[deletePlant] Falha ao deletar imagem local:", e);
+      }
+    }
+
+    // D) State Eradication: Update local state array to reflect the UI
+    set((state) => ({
+      plants: state.plants.filter((p) => p.id !== plantId),
+    }));
+
+    // Trigger sync
     await get().syncDataWithSupabase();
   },
 
@@ -203,4 +233,18 @@ export const usePlantStore = create<PlantStoreState>((set, get) => ({
       console.error("[usePlantStore] syncDataWithSupabase failed:", error);
     }
   },
-}));
+    }),
+    {
+      name: "plant-store",
+      storage: createJSONStorage(() => AsyncStorage),
+      partialize: (state) => ({
+        isPremium: state.isPremium,
+        user: state.user,
+        isAuthenticated: state.isAuthenticated,
+        lastSyncedAt: state.lastSyncedAt,
+        totalFreeScansUsed: state.totalFreeScansUsed,
+        monthlyPremiumScansUsed: state.monthlyPremiumScansUsed,
+      }),
+    }
+  )
+);

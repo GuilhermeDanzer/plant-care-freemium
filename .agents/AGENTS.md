@@ -89,3 +89,12 @@
 ## 18. Expo Native Permissions & Plugins [CRITICAL]
 - **ALWAYS Verify `app.json` Plugins:** When adding or using libraries that require native permissions (e.g., `expo-image-picker`, `expo-location`, `expo-camera`, `expo-notifications`), you MUST check `app.json` to ensure the corresponding plugin is declared.
 - **Provide Usage Descriptions:** You must include the proper permission messages (e.g., `cameraPermission`, `photosPermission`) in the plugin config to prevent the app from crashing in production or during local builds.
+
+## 19. Supabase Migrations Workflow [CRITICAL]
+- **No Raw SQL in Chat:** NEVER provide raw SQL in the chat for the user to run manually when making database modifications (creating tables, altering columns, adding indexes, updating RLS policies, or inserting seed data).
+- **Automated CLI Workflow:** You MUST execute schema changes automatically using the terminal:
+  1. Run `supabase migration new <descriptive_name>`.
+  2. Locate the newly created timestamped file in `supabase/migrations/` and write the exact SQL DDL/RLS inside it.
+  3. Run `supabase db push` to apply it to the remote database.
+  4. Verify the terminal output.
+- **Single Source of Truth:** The repository's migration history is the single source of truth for the database schema. Do not bypass this workflow.

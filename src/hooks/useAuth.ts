@@ -3,7 +3,8 @@ import Purchases from "react-native-purchases";
 import { authService } from "@/services/authService";
 import { usePlantStore } from "@/store/usePlantStore";
 import { AppUser } from "@/types/plant";
-import { subscriptionService } from "@/services/subscriptionService";
+import { subscriptionService, PREMIUM_ENTITLEMENT_ID } from "@/services/subscriptionService";
+import { supabase } from "@/lib/supabase";
 
 export interface UseAuthResult {
   user: AppUser | null;
@@ -40,12 +41,27 @@ export function useAuth(): UseAuthResult {
 
         if (current) {
           setUser(current);
+          
           // Garante que o RC conhece este UUID, mesmo em boots subsequentes.
-          const subStatus = await subscriptionService.loginUser(current.id);
-          usePlantStore.getState().setPremium(subStatus.isActive);
+          await subscriptionService.loginUser(current.id);
+          
+          // Fetch the absolute source of truth from RevenueCat
+          const customerInfo = await Purchases.getCustomerInfo();
+          const isPremium = Boolean(customerInfo.entitlements.active[PREMIUM_ENTITLEMENT_ID]);
+          
+          // Immediately update the `isPremium` state in Zustand
+          usePlantStore.getState().setPremium(isPremium);
 
-          // Sincroniza dados pendentes com o Supabase ao retomar sessão.
+          // Execute an update to the Supabase profiles table to ensure is_premium is synced
           if (!current.isAnonymous) {
+            try {
+              await supabase
+                .from("profiles")
+                .update({ is_premium: isPremium })
+                .eq("id", current.id);
+            } catch (e) {
+              console.warn("[useAuth] Failed to sync is_premium to Supabase:", e);
+            }
             usePlantStore.getState().syncDataWithSupabase();
           }
         } else {
@@ -71,8 +87,19 @@ export function useAuth(): UseAuthResult {
         case "USER_UPDATED":
           setUser(nextUser);
           if (nextUser && !nextUser.isAnonymous) {
-            subscriptionService.loginUser(nextUser.id).then((subStatus) => {
-              usePlantStore.getState().setPremium(subStatus.isActive);
+            subscriptionService.loginUser(nextUser.id).then(async () => {
+              const customerInfo = await Purchases.getCustomerInfo();
+              const isPremium = Boolean(customerInfo.entitlements.active[PREMIUM_ENTITLEMENT_ID]);
+              usePlantStore.getState().setPremium(isPremium);
+              
+              try {
+                await supabase
+                  .from("profiles")
+                  .update({ is_premium: isPremium })
+                  .eq("id", nextUser.id);
+              } catch (e) {
+                console.warn("[useAuth] Failed to sync is_premium to Supabase:", e);
+              }
             });
             usePlantStore.getState().syncDataWithSupabase();
           }

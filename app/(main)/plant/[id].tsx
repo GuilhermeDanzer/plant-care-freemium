@@ -6,6 +6,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import {
   type ComponentType,
+  useCallback,
   useEffect,
   useMemo,
   useRef,

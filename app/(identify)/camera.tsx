@@ -65,7 +65,7 @@ export default function CameraRoute() {
       // IMPORTANT: Do NOT show/hide any Modal before this call.
       // iOS cannot present a native camera modal while a React Modal is animating out.
       const result = await ImagePicker.launchCameraAsync({
-        mediaTypes: ["images"],
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
         quality: 0.6,
         allowsEditing: false,
       });
@@ -89,7 +89,7 @@ export default function CameraRoute() {
         return;
       }
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ["images"],
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
         quality: 0.6,
         allowsMultipleSelection: true,
         selectionLimit: MAX_PHOTOS - photos.length,
