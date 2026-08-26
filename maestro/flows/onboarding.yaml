@@ -1,0 +1,20 @@
+appId: com.danzer.planticare
+---
+# Onboarding flow (first launch, clean state).
+- launchApp:
+    clearState: true
+
+# Step 1
+- assertVisible: "Welcome to Plant Care"
+- tapOn: "Continue"
+
+# Step 2 — notification prompt appears; skip to keep it deterministic.
+- assertVisible: "Never forget to water"
+- tapOn: "Skip for now"
+
+# Step 3
+- assertVisible: "All set!"
+- tapOn: "Start using"
+
+# Dashboard empty state.
+- assertVisible: "No plants registered"

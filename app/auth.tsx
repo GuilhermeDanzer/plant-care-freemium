@@ -70,12 +70,12 @@ export default function AuthRoute() {
     if (isSubmitting) return;
 
     if (emailTrimmed.length === 0) {
-      showErrorToast(t("auth.error"), "Por favor, insira seu email.");
+      showErrorToast(t("auth.error"), t("auth.missingEmail"));
       return;
     }
 
     if (password.length < 6) {
-      showErrorToast(t("auth.error"), "A senha deve ter pelo menos 6 caracteres.");
+      showErrorToast(t("auth.error"), t("auth.passwordTooShort"));
       return;
     }
 
@@ -115,9 +115,9 @@ export default function AuthRoute() {
 
       // Traduz os erros do Supabase para PT-BR
       if (message.toLowerCase().includes("already registered")) {
-        message = t("auth.userAlreadyRegistered", "Este email já está cadastrado. Tente fazer login.");
+        message = t("auth.userAlreadyRegistered");
       } else if (message.toLowerCase().includes("invalid login credentials")) {
-        message = t("auth.invalidCredentials", "Email ou senha incorretos.");
+        message = t("auth.invalidCredentials");
       }
 
       showErrorToast(

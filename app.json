@@ -17,7 +17,11 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.danzer.planticare",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSCameraUsageDescription": "O PlantHelper precisa de acesso à câmera para que você possa tirar fotos e identificar as espécies das suas plantas.",
+        "NSPhotoLibraryUsageDescription": "O PlantHelper precisa de acesso à galeria para que você possa enviar fotos das suas plantas para identificação e para salvar no seu jardim virtual.",
+        "NSLocationWhenInUseUsageDescription": "O PlantHelper usa sua localização para consultar a previsão do tempo na sua região e ajustar a frequência ideal de rega das suas plantas.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "O PlantHelper usa sua localização para consultar a previsão do tempo na sua região e ajustar a frequência ideal de rega das suas plantas."
       }
     },
     "android": {
@@ -37,11 +41,18 @@
       "@react-native-community/datetimepicker",
       "expo-router",
       "expo-localization",
+      "expo-notifications",
       [
         "expo-image-picker",
         {
-          "photosPermission": "The app needs to access your photos to identify plants and save to your journal.",
-          "cameraPermission": "The app needs to access your camera to take photos of your plants."
+          "photosPermission": "O PlantHelper precisa de acesso à galeria para que você possa enviar fotos das suas plantas para identificação e para salvar no seu jardim virtual.",
+          "cameraPermission": "O PlantHelper precisa de acesso à câmera para que você possa tirar fotos e identificar as espécies das suas plantas."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "O PlantHelper usa sua localização para consultar a previsão do tempo na sua região e ajustar a frequência ideal de rega das suas plantas."
         }
       ]
     ],

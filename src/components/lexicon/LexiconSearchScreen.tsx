@@ -60,7 +60,7 @@ export const LexiconSearchScreen: React.FC<Props> = ({ onSelectPlant }) => {
         <Text className="text-lg font-semibold text-slate-800">{item.entity_name}</Text>
         {item.matched_in && item.matched_in !== item.entity_name && (
           <Text className="text-sm text-slate-500 mt-1 capitalize">
-            {item.matched_in_type === "synonym" ? "Sinônimo: " : "Corresponde: "}
+            {item.matched_in_type === "synonym" ? t("lexicon.synonymPrefix") : t("lexicon.matchedPrefix")}
             {item.matched_in}
           </Text>
         )}
@@ -80,13 +80,13 @@ export const LexiconSearchScreen: React.FC<Props> = ({ onSelectPlant }) => {
             <BackIcon color="#0f172a" size={18} />
           </Pressable>
           <Text className="ml-4 text-2xl font-bold tracking-tight text-slate-900">
-            {t("lexicon.welcomeTitle", "Plant Lexicon")}
+            {t("lexicon.welcomeTitle")}
           </Text>
         </View>
         
         <Input
           icon={Search}
-          placeholder={t("lexicon.searchPlaceholder", "Buscar plantas...")}
+          placeholder={t("lexicon.searchPlaceholder")}
           value={query}
           onChangeText={setQuery}
           autoCapitalize="none"
@@ -99,7 +99,7 @@ export const LexiconSearchScreen: React.FC<Props> = ({ onSelectPlant }) => {
           <View className="mt-10 items-center">
             <ActivityIndicator size="large" color="#10b981" />
             <Text className="mt-4 text-slate-500 font-medium">
-              {t("lexicon.searching", "Pesquisando...")}
+              {t("lexicon.searching")}
             </Text>
           </View>
         ) : (
@@ -113,10 +113,10 @@ export const LexiconSearchScreen: React.FC<Props> = ({ onSelectPlant }) => {
               query.length > 0 && !isLoading ? (
                 <View className="mt-20 items-center">
                   <Text className="text-lg font-semibold text-slate-700">
-                    {t("lexicon.noResults", "Nenhuma planta encontrada")}
+                    {t("lexicon.noResults")}
                   </Text>
                   <Text className="text-slate-500 text-center mt-2 px-6">
-                    {t("lexicon.tryDifferentName", "Tente pesquisar por outro nome comum ou científico.")}
+                    {t("lexicon.tryDifferentName")}
                   </Text>
                 </View>
               ) : (
@@ -126,13 +126,10 @@ export const LexiconSearchScreen: React.FC<Props> = ({ onSelectPlant }) => {
                     <BookOpen color="#10b981" size={40} />
                   </View>
                   <Text className="text-xl font-bold text-slate-800 text-center">
-                    {t("lexicon.welcomeTitle", "Plant Lexicon")}
+                    {t("lexicon.welcomeTitle")}
                   </Text>
                   <Text className="text-slate-500 text-center mt-3 px-6 leading-6">
-                    {t(
-                      "lexicon.welcomeBody",
-                      "Pesquise em nosso banco de dados com mais de 10.000 plantas para descobrir dicas de cuidados e detalhes botânicos."
-                    )}
+                    {t("lexicon.welcomeBody")}
                   </Text>
                 </View>
               )

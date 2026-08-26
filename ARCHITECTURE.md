@@ -119,3 +119,93 @@ Global state is divided into domain-specific slices:
 1. **Environment Config:** Duplicate `.env.example` to `.env` and inject the `EXPO_PUBLIC_KINDWISE_API_KEY`.
 2. **Build the Native Client:** The project relies on custom native code (SQLite, Notifications, Reanimated). You must run `npx expo prebuild` or use `npm run ios` (which triggers `xcodebuild`). You cannot use Expo Go.
 3. **Explore the Core Flow:** Walk through the manual addition flow (`app/(identify)/manual-add.tsx`) to understand local DB inserts, then test the Camera route (`app/(identify)/camera.tsx`) to trace the React Query mutations and `plantService.ts` cache logic.
+
+---
+
+## 8. Permission Re-asking & Session Data Clearing
+
+### 8.1 Centralized Permission Flow
+- `src/services/permissionService.ts` centralizes camera, gallery, location and
+  notification permission handling with an "Open Settings" fallback.
+- When a permission is revoked in the system Settings, iOS/Android will not show
+  the native prompt again. `ensure*Permission()` detects this (Android
+  `canAskAgain === false`, iOS `status !== "undetermined"`) and surfaces a
+  translated `Alert` that deep-links to `Linking.openSettings()`.
+- Returns `"granted" | "denied" | "revoked"` so callers can distinguish a fresh
+  denial from a revoked permission.
+
+### 8.2 Logout & Guest-to-Account Carryover
+- `usePlantStore.signOut()` wipes the local SQLite garden (`clearAllLocalData()`),
+  clears in-memory plants and `lastSyncedAt`, cancels scheduled watering
+  notifications, and clears user/premium state.
+- The `SIGNED_OUT` auth event only resets in-memory garden state (`clearGarden()`),
+  never SQLite, so a transient sign-out during anonymous-to-account login does
+  not destroy guest plants. Guest plants are then pushed to the new account via
+  `SIGNED_IN -> syncDataWithSupabase()` (with `lastSyncedAt === null` forcing a
+  full push).
+
+### 8.3 Health Result Component Decomposition
+- `HealthResultCard` was split into `src/components/health/` (HealthGauge,
+  GeneralTipsCard, BulletSection, healthPalette), `src/components/ui/FadeIn`,
+  and shared types in `src/types/health.ts`. Interpretation logic lives in
+  `src/utils/healthUtils.ts` (no longer duplicated).
+
+### 8.4 Account Deletion (Supabase Edge Function)
+- `authService.deleteAccount()` invokes the `delete-account` Edge Function via
+  `supabase.functions.invoke`, then clears the local session and RevenueCat
+  identity. Settings (`app/(main)/settings.tsx`) follows up by wiping the
+  SQLite garden (`resetGarden()`), cancelling scheduled notifications, and
+  resetting the global user state.
+- The Edge Function (`supabase/functions/delete-account/index.ts`) uses
+  `@supabase/server`'s `withSupabase({ auth: "user" })` so the caller's JWT is
+  verified before any work runs (`verify_jwt = true`). It then:
+  1. Recursively removes the user's objects under `user_media/{userId}/...`.
+  2. Hard-deletes the auth user via `ctx.supabaseAdmin.auth.admin.deleteUser`,
+     which cascades to `profiles`, `plants` and `journal_entries` through their
+     `ON DELETE CASCADE` foreign keys on `auth.users(id)`.
+- The service-role key never leaves the server; only the caller's own account
+  (derived from their verified JWT, never a client-supplied ID) can be deleted.
+
+### 8.5 Plant Detail Screen Decomposition
+- `app/(main)/plant/[id].tsx` was reduced from a 481-line god-component to a
+  thin (~137-line) presentational route. All business logic (nickname editing,
+  AI diagnosis, camera/gallery photo capture, journal) now lives in
+  `src/hooks/usePlantDetail.ts`, which the screen consumes via a single
+  destructure.
+- The remaining inline JSX was extracted into reusable `src/components/plant-detail/`
+  components: `PlantDetailHeader`, `PlantNameSection`, `PlantHealthSection`, and
+  `PlantNotFound` (exported from the barrel `index.ts`), alongside the existing
+  `WateringHeroCard`, `PhotoSourceSheet`, `JournalTimeline`, etc.
+- This follows the same screen → hook + presentational-components pattern used
+  by the Health Result decomposition (§8.3).
+
+---
+
+## 9. Testing Infrastructure
+
+### 9.1 Test stack
+- **Unit/component tests:** Jest with the `jest-expo` preset (SDK 54) +
+  `@testing-library/react-native`. Config lives in `jest.config.js` with global
+  setup in `jest.setup.js` (Reanimated v4 mock, AsyncStorage mock, `EXPO_PUBLIC_*`
+  test env values).
+- **Static analysis:** `npm run typecheck` runs `tsc --noEmit` (strict mode).
+- **E2E:** Maestro YAML flows in `maestro/flows/` drive a dev-client build on a
+  simulator or physical device.
+
+### 9.2 Coverage strategy
+Tests target the highest-risk domain logic rather than snapshot-testing every
+view:
+
+- `src/utils/` — `healthUtils` (interpretation thresholds), `checkScanBalance`
+  (free/premium gating), `calculateNextWateringDate` (weather rules),
+  `dateUtils`, `plantUtils`, and i18n locale parity.
+- `src/services/` — `subscriptionService` (RevenueCat entitlement mapping +
+  cancellation), `kindwiseService`, `weatherService`, `authService` (incl.
+  account deletion).
+- `src/store/` — `usePlantStore` (premium gating, guest carryover, sign-out
+  wipe, sync), `useTaskStore` (streak rules), `useSettingsStore`.
+- `src/components/` — lightweight render tests (e.g. `PlantCard`).
+
+### 9.3 CI
+- `.github/workflows/ci.yml` — typecheck + unit tests on every push/PR.
+- `.github/workflows/e2e-ios.yml` — Maestro on an iOS simulator (on-demand/weekly).

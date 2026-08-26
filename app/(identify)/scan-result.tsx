@@ -1,12 +1,14 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useMemo } from "react";
 import { View, Text } from "react-native";
+import { useTranslation } from "react-i18next";
 import { ScanResultScreen } from "@/components/ScanResultScreen";
 import { plantService } from "@/services/plantService";
 import { KindwiseIdentificationResponse, KindwiseSuggestion } from "@/types/kindwise";
 
 export default function ScanResultRoute() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { scanData: rawScanData, imageUri } = useLocalSearchParams<{
     scanData?: string;
     imageUri?: string;
@@ -44,7 +46,7 @@ export default function ScanResultRoute() {
   if (!scanData) {
     return (
       <View className="flex-1 items-center justify-center bg-slate-50">
-        <Text className="text-slate-500">Nenhum dado de identificação encontrado.</Text>
+        <Text className="text-slate-500">{t("scanResult.notFound")}</Text>
       </View>
     );
   }

@@ -1,0 +1,43 @@
+name: E2E (iOS)
+
+# Heavy: builds the native app and runs Maestro on an iOS simulator.
+# Run on-demand to avoid slowing every PR with a ~20 min native build.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 4 * * 1" # weekly on Mondays
+
+jobs:
+  e2e-ios:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci --legacy-peer-deps
+
+      # Prebuild + pod install + build the native app on the simulator.
+      - name: Prebuild iOS
+        run: npx expo prebuild --platform ios --no-install
+      - name: Install pods
+        working-directory: ios
+        run: pod install
+      - name: Build & boot simulator
+        run: |
+          xcrun simctl boot "iPhone 16 Pro" || true
+          xcrun simctl list devices
+
+      - name: Install Maestro
+        run: |
+          curl -fsSL "https://get.maestro.mobile.dev" | bash
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+
+      - name: Build app for simulator
+        run: |
+          npx react-native run-ios --simulator "iPhone 16 Pro" --no-packager
+
+      - name: Run Maestro flows
+        run: maestro test maestro/flows/

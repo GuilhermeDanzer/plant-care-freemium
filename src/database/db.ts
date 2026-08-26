@@ -398,3 +398,12 @@ export const upsertJournalEntryRaw = async (entry: JournalEntry): Promise<void> 
     [entry.id, entry.plant_id, entry.image_uri, entry.note, entry.created_at, entry.updated_at, entry.deleted_at]
   );
 };
+
+/**
+ * Wipes all local garden data (plants + journal). Used on logout so a new
+ * account does not inherit the previous user's offline data.
+ */
+export const clearAllLocalData = async (): Promise<void> => {
+  const db = await getDatabase();
+  await db.execAsync(`DELETE FROM ${TABLE_NAME}; DELETE FROM ${JOURNAL_TABLE};`);
+};

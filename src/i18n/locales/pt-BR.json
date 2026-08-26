@@ -12,6 +12,18 @@
     "passwordLabel": "Senha",
     "passwordPlaceholder": "Mínimo de 6 caracteres"
   },
+  "permissions": {
+    "openSettings": "Abrir Ajustes",
+    "cameraTitle": "Permissão da câmera",
+    "cameraBody": "O acesso à câmera foi desativado. Para tirar fotos das suas plantas, ative a permissão nas configurações do sistema.",
+    "mediaLibraryTitle": "Permissão da galeria",
+    "mediaLibraryBody": "O acesso às fotos foi desativado. Para escolher imagens da galeria, ative a permissão nas configurações do sistema.",
+    "locationTitle": "Permissão de localização",
+    "locationBody": "A localização foi desativada. Para ajustar a rega de acordo com o clima, ative a permissão nas configurações do sistema.",
+    "notificationsTitle": "Permissão de notificações",
+    "notificationsBody": "As notificações foram desativadas. Para receber lembretes de rega, ative a permissão nas configurações do sistema.",
+    "locationDeniedMessage": "Permissão de localização negada."
+  },
   "auth": {
     "missingEmail": "Por favor, insira seu email.",
     "passwordTooShort": "A senha deve ter pelo menos 6 caracteres.",
@@ -50,6 +62,8 @@
     "passwordChangedTitle": "Senha alterada",
     "passwordChangedBody": "Sua senha foi redefinida com sucesso!",
     "failureTitle": "Falha",
+    "error": "Erro",
+    "userAlreadyRegistered": "Este email já está cadastrado. Tente fazer login.",
     "newPasswordTitle": "Nova Senha",
     "newPasswordDesc": "Crie uma nova senha para sua conta.",
     "resetPasswordBtn": "Redefinir Senha"
@@ -67,6 +81,8 @@
     "developerMenu": "Developer Menu",
     "testNotification": "Testar Notificação (5s)",
     "testNotificationDesc": "Dispara em 5s para testar background",
+    "testNotificationTitle": "Teste de Notificação 🧪",
+    "testNotificationBody": "Isso é um teste. Funciona no background!",
     "myAccount": "Minha Conta",
     "deleteAccount": "Excluir conta",
     "deleteAccountDesc": "Apagar todos os meus dados",
@@ -98,7 +114,14 @@
     "editModeDone": "Concluir",
     "editModeEdit": "Editar",
     "emptyStateTitle": "Nenhuma planta cadastrada",
-    "emptyStateBody": "Toque no botão flutuante para adicionar sua primeira planta."
+    "emptyStateBody": "Toque no botão flutuante para adicionar sua primeira planta.",
+    "tasksToday": "Tarefas de Hoje",
+    "optimizing": "Otimizando...",
+    "optimizeAI": "✨ Otimizar Rega com IA",
+    "scheduleSuccessTitle": "Sucesso",
+    "scheduleSuccessBody": "Cronogramas de rega otimizados com IA!",
+    "scheduleFailTitle": "Erro",
+    "scheduleFailBody": "Não foi possível otimizar os cronogramas no momento."
   },
   "onboarding": {
     "step1Title": "Bem-vindo ao Plant Care",
@@ -120,6 +143,8 @@
     "restoreSuccessTitle": "Assinatura restaurada",
     "restoreSuccessBody": "Acesso Premium reativado.",
     "restoreErrorBody": "Nenhuma assinatura encontrada",
+    "restoreFailTitle": "Erro",
+    "restoreFailBody": "Não foi possível restaurar.",
     "proBadge": "PlantHelper Pro",
     "title": "Sua selva, sem limites",
     "subtitle": "Desbloqueie uma experiência premium com mais espaço, contexto e cuidado.",
@@ -205,6 +230,7 @@
     "healthTitle": "Diagnóstico de Saúde",
     "healthyMsg": "Planta aparenta estar saudável!",
     "issuesMsg": "Possíveis problemas detectados",
+    "notFound": "Nenhum dado de identificação encontrado.",
     "healthDisclaimer": "\u26a0\ufe0f Sempre verifique o solo e o ambiente antes de aplicar qualquer tratamento.",
     "cancelBtn": "\u2190 Tentar novamente com outras fotos"
   },
@@ -285,6 +311,8 @@
     "emptyHealthSubtitle": "Faça uma consulta de saúde por IA agora.",
     "journalTitle": "Linha do Tempo",
     "journalNewPhotoBtn": "Nova Foto",
+    "journalSuccessTitle": "Salvo!",
+    "journalSuccessBody": "Sua foto foi adicionada ao diário.",
     "journalEmptyTitle": "Diário vazio",
     "journalEmptySubtitle": "Acompanhe o crescimento da sua planta tirando fotos regularmente.",
     "photoSheetTitle": "Escolha a foto para o diagnóstico",
@@ -313,6 +341,72 @@
   "manualAdd": {
     "scientificNameDefault": "Adicionado Manualmente",
     "notificationTitle": "Hora de regar sua planta! 💧",
-    "notificationBody": "{{plantName}} está com sede. Verifique a terra e dê um pouco de água hoje!"
+    "notificationBody": "{{plantName}} está com sede. Verifique a terra e dê um pouco de água hoje!",
+    "errorSpecies": "A espécie ou nome comum é obrigatório.",
+    "errorWatering": "Frequência de rega inválida.",
+    "camera": "Câmera",
+    "gallery": "Galeria",
+    "speciesLabel": "Espécie / Nome da Planta *",
+    "speciesPlaceholder": "Ex: Costela de Adão, Zamioculca...",
+    "nicknameLabel": "Apelido (Opcional)",
+    "nicknamePlaceholder": "Ex: Plantinha da Sala",
+    "wateringLabel": "Regar a cada X dias *",
+    "wateringPlaceholder": "Ex: 7",
+    "saveBtn": "Salvar Planta",
+    "cancelBtn": "Cancelar"
+  },
+  "addPlant": {
+    "title": "Adicionar Planta",
+    "aiOption": "Identificar com IA",
+    "aiCost": "✨ Custa 1 Crédito",
+    "manualOption": "Adicionar Manualmente",
+    "manualCost": "Gratuito"
+  },
+  "lexicon": {
+    "accessibilityTitle": "Plant Lexicon",
+    "welcomeTitle": "Plant Lexicon",
+    "welcomeBody": "Pesquise em nosso banco de dados com mais de 10.000 plantas para descobrir dicas de cuidados e detalhes botânicos.",
+    "searchPlaceholder": "Buscar plantas...",
+    "searching": "Pesquisando...",
+    "noResults": "Nenhuma planta encontrada",
+    "tryDifferentName": "Tente pesquisar por outro nome comum ou científico.",
+    "synonymPrefix": "Sinônimo: ",
+    "matchedPrefix": "Corresponde: ",
+    "premiumLockTitle": "Guia de Cuidados Premium",
+    "premiumLockBody": "Descubra o guia botânico completo da {{name}}. Desbloqueie rega, taxonomia, propagação e muito mais.",
+    "unlockButton": "Assinar Premium por R$10/mês",
+    "wateringCare": "Cuidados com a Água",
+    "wateringInterval": "Frequência Recomendada",
+    "wateringEvery": "A cada {{count}} dias",
+    "wateringRange": "A cada {{min}} a {{max}} dias",
+    "taxonomy": "Taxonomia",
+    "description": "Descrição Botânica",
+    "synonyms": "Sinônimos",
+    "propagation": "Propagação",
+    "edible": "Comestível",
+    "wateringTeaser": "Regar a cada 7 - 10 dias",
+    "taxonomyTeaserTitle": "Taxonomia Botânica",
+    "taxonomyTeaserBody": "Descubra a família, gênero, ordem e classe botânica completa...",
+    "descriptionTeaserTitle": "Descrição",
+    "descriptionTeaserBody": "A Monstera deliciosa, comumente chamada de costela-de-adão, é uma espécie de planta com flor..."
+  },
+  "milestones": {
+    "shareUnavailableTitle": "Erro",
+    "shareUnavailableBody": "O compartilhamento não está disponível no seu dispositivo.",
+    "shareTitle": "Compartilhe sua conquista!",
+    "shareErrorTitle": "Erro",
+    "shareErrorBody": "Não foi possível gerar a imagem para compartilhamento.",
+    "streak": "{{count}} Dias de Sequência!",
+    "streak_plural": "{{count}} Dias de Sequência!",
+    "shareBtn": "Compartilhar no Instagram",
+    "closeBtn": "Fechar"
+  },
+  "tasks": {
+    "waterTaskDescription": "Precisa de água",
+    "rotateTaskDescription": "Precisa de sol uniforme",
+    "cleanTaskDescription": "Folhas empoeiradas",
+    "watered": "Reguei",
+    "soilWet": "Solo Úmido",
+    "done": "Feito"
   }
 }

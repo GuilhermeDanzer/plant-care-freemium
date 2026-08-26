@@ -19,7 +19,7 @@ export const MilestoneCard = forwardRef<ViewShot, MilestoneCardProps>(
       <ViewShot
         ref={ref}
         options={{ format: "png", quality: 0.9 }}
-        className="w-full aspect-[9/16] overflow-hidden rounded-3xl"
+        style={{ width: "100%", aspectRatio: 9 / 16, overflow: "hidden", borderRadius: 24 }}
       >
         {/* Blurred Background */}
         <Image

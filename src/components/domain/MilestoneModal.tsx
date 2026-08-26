@@ -35,17 +35,14 @@ export const MilestoneModal = () => {
       const isAvailable = await Sharing.isAvailableAsync();
       if (!isAvailable) {
         Alert.alert(
-          t("milestones.shareUnavailableTitle", "Erro"),
-          t(
-            "milestones.shareUnavailableBody",
-            "O compartilhamento não está disponível no seu dispositivo."
-          )
+          t("milestones.shareUnavailableTitle"),
+          t("milestones.shareUnavailableBody")
         );
         return;
       }
 
       await Sharing.shareAsync(uri, {
-        dialogTitle: t("milestones.shareTitle", "Compartilhe sua conquista!"),
+        dialogTitle: t("milestones.shareTitle"),
         mimeType: "image/png",
       });
       
@@ -53,20 +50,14 @@ export const MilestoneModal = () => {
     } catch (error) {
       console.error("Failed to share milestone image:", error);
       Alert.alert(
-        t("milestones.shareErrorTitle", "Erro"),
-        t(
-          "milestones.shareErrorBody",
-          "Não foi possível gerar a imagem para compartilhamento."
-        )
+        t("milestones.shareErrorTitle"),
+        t("milestones.shareErrorBody")
       );
     }
   };
 
   const plantName = plant.nickname || plant.original_name;
-  const milestoneText = t("milestones.streak", {
-    count: milestoneValue,
-    defaultValue: `${milestoneValue} Dias de Sequência!`,
-  });
+  const milestoneText = t("milestones.streak", { count: milestoneValue });
 
   return (
     <Modal
@@ -91,7 +82,7 @@ export const MilestoneModal = () => {
             className="w-full items-center justify-center rounded-2xl bg-indigo-500 py-4 active:opacity-80 shadow-md"
           >
             <Text className="font-bold text-white text-lg">
-              {t("milestones.shareBtn", "Compartilhar no Instagram")}
+              {t("milestones.shareBtn")}
             </Text>
           </Pressable>
 
@@ -100,7 +91,7 @@ export const MilestoneModal = () => {
             className="w-full items-center justify-center rounded-2xl bg-slate-800 py-4 active:opacity-80"
           >
             <Text className="font-bold text-slate-300 text-lg">
-              {t("milestones.closeBtn", "Fechar")}
+              {t("milestones.closeBtn")}
             </Text>
           </Pressable>
         </View>

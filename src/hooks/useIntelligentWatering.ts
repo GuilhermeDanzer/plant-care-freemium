@@ -1,6 +1,8 @@
 import { useState, useCallback } from 'react';
 import * as Location from 'expo-location';
+import i18n from '@/i18n';
 import { weatherService } from '@/services/weatherService';
+import { permissionService } from '@/services/permissionService';
 import { calculateNextWateringDate } from '@/utils/calculateNextWateringDate';
 import { WeatherPlant, WeatherData } from '@/types/weather';
 
@@ -18,9 +20,9 @@ export const useIntelligentWatering = () => {
       setError(null);
 
       try {
-        const { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== 'granted') {
-          throw new Error('Location permission denied.');
+        const permission = await permissionService.ensureLocationPermission();
+        if (permission !== 'granted') {
+          throw new Error(i18n.t('permissions.locationDeniedMessage'));
         }
 
         const location = await Location.getCurrentPositionAsync({
@@ -43,7 +45,7 @@ export const useIntelligentWatering = () => {
 
         return adjustedPlants;
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred while calculating schedules.';
+        const errorMessage = err instanceof Error ? err.message : i18n.t('common.unknownError');
         setError(errorMessage);
         return [];
       } finally {

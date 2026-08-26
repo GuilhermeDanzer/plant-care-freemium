@@ -1,0 +1,19 @@
+appId: com.danzer.planticare
+---
+# Watering a plant from the dashboard (streak + notification scheduling).
+- launchApp:
+    clearState: false
+
+# Open the first plant card.
+- tapOn: "Living Room"
+
+# Water it.
+- tapOn:
+    id: "water-button"
+
+# Return to dashboard.
+- tapOn:
+    id: "back-button"
+
+# The plant should no longer be overdue.
+- assertVisible: "Living Room"

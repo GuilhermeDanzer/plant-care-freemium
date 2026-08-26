@@ -1,0 +1,18 @@
+appId: com.danzer.planticare
+---
+# Settings → account deletion (REQUIRED by Apple for apps with accounts).
+# ⚠️ Destructive: only run against a throwaway account.
+- launchApp:
+    clearState: false
+
+- tapOn:
+    id: "settings-button"
+
+- assertVisible: "Settings"
+- tapOn: "Delete account"
+
+# Confirmation prompt.
+- assertVisible: "Are you sure you want to delete your account? This action cannot be undone."
+- tapOn: "Delete"
+
+- assertVisible: "Account deleted successfully"

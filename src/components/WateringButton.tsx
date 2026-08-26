@@ -82,7 +82,7 @@ export function WateringButton({ plantId, wateringFreqDays, quantity = 24 }: Wat
         <View className="flex-row items-center justify-center gap-2" style={{ zIndex: 1 }}>
           <DropletIcon color="#ffffff" size={18} />
           <Text className="text-center text-base font-bold tracking-tight text-white">
-            {isWatering ? "Registrando..." : "Já reguei"}
+            {isWatering ? t("plantDetail.wateringBtnProgress") : t("plantDetail.wateringBtnDone")}
           </Text>
         </View>
       </TouchableOpacity>

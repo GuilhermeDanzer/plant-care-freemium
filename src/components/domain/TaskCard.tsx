@@ -40,9 +40,9 @@ export const TaskCard = memo(function TaskCard({ task }: TaskCardProps) {
             {task.plantName}
           </Text>
           <Text className="text-sm text-slate-500 mb-4">
-            {task.type === "REGAR" && t("tasks.waterTaskDescription", "Precisa de água")}
-            {task.type === "GIRAR" && t("tasks.rotateTaskDescription", "Precisa de sol uniforme")}
-            {task.type === "LIMPAR" && t("tasks.cleanTaskDescription", "Folhas empoeiradas")}
+            {task.type === "REGAR" && t("tasks.waterTaskDescription")}
+            {task.type === "GIRAR" && t("tasks.rotateTaskDescription")}
+            {task.type === "LIMPAR" && t("tasks.cleanTaskDescription")}
           </Text>
 
           {task.type === "REGAR" ? (
@@ -52,7 +52,7 @@ export const TaskCard = memo(function TaskCard({ task }: TaskCardProps) {
                 className="flex-1 items-center justify-center rounded-xl bg-emerald-500 py-3 active:opacity-80"
               >
                 <Text className="font-bold text-white text-base">
-                  {t("tasks.watered", "Reguei")}
+                  {t("tasks.watered")}
                 </Text>
               </Pressable>
 
@@ -61,7 +61,7 @@ export const TaskCard = memo(function TaskCard({ task }: TaskCardProps) {
                 className="flex-1 items-center justify-center rounded-xl border border-blue-400 bg-blue-50 py-3 active:opacity-80"
               >
                 <Text className="font-bold text-blue-500 text-base">
-                  {t("tasks.soilWet", "Solo Úmido")}
+                  {t("tasks.soilWet")}
                 </Text>
               </Pressable>
             </View>
@@ -72,7 +72,7 @@ export const TaskCard = memo(function TaskCard({ task }: TaskCardProps) {
                 className="w-full items-center justify-center rounded-xl bg-emerald-500 py-3 active:opacity-80"
               >
                 <Text className="font-bold text-white text-base">
-                  {t("tasks.done", "Feito")}
+                  {t("tasks.done")}
                 </Text>
               </Pressable>
             </View>

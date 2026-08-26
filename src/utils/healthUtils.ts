@@ -3,16 +3,10 @@
  * Pure business logic for interpreting plant health assessment API responses.
  * No React dependencies — fully unit-testable in isolation.
  */
-import { DiseaseSuggestion, HealthAssessmentResponse } from "@/types/plant";
+import type { HealthAssessmentResponse } from "@/types/plant";
+import type { InterpretedHealth } from "@/types/health";
 
-export type HealthState = "perfect" | "optimization" | "critical";
-
-export interface InterpretedHealth {
-  state: HealthState;
-  score: number;
-  relevantSuggestions: DiseaseSuggestion[];
-  hadSuggestions: boolean;
-}
+export type { HealthState, InterpretedHealth } from "@/types/health";
 
 // Threshold used to DECIDE state (perfect vs optimization).
 export const DECISION_THRESHOLD = 0.15;

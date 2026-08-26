@@ -1,0 +1,24 @@
+appId: com.danzer.planticare
+---
+# Manual plant addition (offline, no camera/API needed — deterministic in CI).
+- launchApp:
+    clearState: false
+
+# Open the add sheet via the floating action button.
+- tapOn:
+    id: "add-plant-button"
+
+- tapOn: "Add Manually"
+
+# Fill the manual form.
+- assertVisible: "Species / Plant Name *"
+- tapOn: "Species / Plant Name *"
+- inputText: "Monstera"
+- tapOn: "Nickname (Optional)"
+- inputText: "Living Room"
+- tapOn: "Water every X days *"
+- inputText: "7"
+- tapOn: "Save Plant"
+
+# Back on the dashboard, the new plant appears.
+- assertVisible: "Living Room"

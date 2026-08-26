@@ -94,18 +94,18 @@ export const LexiconDetailsScreen: React.FC<Props> = ({ accessToken, name, isPre
             <View className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white" style={shadowLayering.core}>
               {/* The Teaser UI (Blurred) */}
               <View className="p-6" style={{ opacity: 0.4 }}>
-                <Text className="text-xl font-bold text-slate-800 mb-2">Cuidados com a Água</Text>
+                <Text className="text-xl font-bold text-slate-800 mb-2">{t("lexicon.wateringCare")}</Text>
                 <View className="flex-row items-center mb-6">
                   <Droplet color="#3b82f6" size={24} />
-                  <Text className="text-slate-600 text-base ml-2">Regar a cada 7 - 10 dias</Text>
+                  <Text className="text-slate-600 text-base ml-2">{t("lexicon.wateringTeaser")}</Text>
                 </View>
-                <Text className="text-xl font-bold text-slate-800 mb-2">Taxonomia Botânica</Text>
+                <Text className="text-xl font-bold text-slate-800 mb-2">{t("lexicon.taxonomyTeaserTitle")}</Text>
                 <Text className="text-slate-600 leading-6 mb-6">
-                  Descubra a família, gênero, ordem e classe botânica completa...
+                  {t("lexicon.taxonomyTeaserBody")}
                 </Text>
-                <Text className="text-xl font-bold text-slate-800 mb-2">Descrição</Text>
+                <Text className="text-xl font-bold text-slate-800 mb-2">{t("lexicon.descriptionTeaserTitle")}</Text>
                 <Text className="text-slate-600 leading-6">
-                  A Monstera deliciosa, comumente chamada de costela-de-adão, é uma espécie de planta com flor...
+                  {t("lexicon.descriptionTeaserBody")}
                 </Text>
               </View>
 
@@ -115,13 +115,10 @@ export const LexiconDetailsScreen: React.FC<Props> = ({ accessToken, name, isPre
                     <Lock color="#059669" size={32} />
                   </View>
                   <Text className="text-xl font-bold text-slate-800 text-center mb-2">
-                    {t("lexicon.premiumLockTitle", "Guia de Cuidados Premium")}
+                    {t("lexicon.premiumLockTitle")}
                   </Text>
                   <Text className="text-slate-600 text-center mb-6 leading-5">
-                    {t(
-                      "lexicon.premiumLockBody",
-                      `Descubra o guia botânico completo da ${name}. Desbloqueie rega, taxonomia, propagação e muito mais.`
-                    )}
+                    {t("lexicon.premiumLockBody", { name })}
                   </Text>
                   
                   <TouchableOpacity
@@ -129,7 +126,7 @@ export const LexiconDetailsScreen: React.FC<Props> = ({ accessToken, name, isPre
                     onPress={onPaywall}
                   >
                     <Text className="text-white font-bold text-center text-lg">
-                      {t("lexicon.unlockButton", "Assinar Premium por R$10/mês")}
+                      {t("lexicon.unlockButton")}
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -146,7 +143,7 @@ export const LexiconDetailsScreen: React.FC<Props> = ({ accessToken, name, isPre
                   {details.watering && (
                     <View className="bg-white rounded-3xl p-6 border border-slate-100" style={shadowLayering.core}>
                       <Text className="text-xl font-bold text-slate-800 mb-4">
-                        {t("lexicon.wateringCare", "Cuidados com a Água")}
+                        {t("lexicon.wateringCare")}
                       </Text>
                       <View className="flex-row items-center bg-blue-50 p-4 rounded-2xl border border-blue-100">
                         <View className="h-12 w-12 bg-white rounded-full items-center justify-center mr-4">
@@ -154,12 +151,12 @@ export const LexiconDetailsScreen: React.FC<Props> = ({ accessToken, name, isPre
                         </View>
                         <View className="flex-1">
                           <Text className="text-blue-900 font-semibold mb-1">
-                            {t("lexicon.wateringInterval", "Frequência Recomendada")}
+                            {t("lexicon.wateringInterval")}
                           </Text>
                           <Text className="text-blue-700 text-base">
                             {details.watering.min === details.watering.max 
-                              ? `A cada ${details.watering.min} dias`
-                              : `A cada ${details.watering.min} a ${details.watering.max} dias`}
+                              ? t("lexicon.wateringEvery", { count: details.watering.min })
+                              : t("lexicon.wateringRange", { min: details.watering.min, max: details.watering.max })}
                           </Text>
                         </View>
                       </View>
@@ -170,7 +167,7 @@ export const LexiconDetailsScreen: React.FC<Props> = ({ accessToken, name, isPre
                   {details.taxonomy && (
                     <View className="bg-white rounded-3xl p-6 border border-slate-100" style={shadowLayering.core}>
                       <Text className="text-xl font-bold text-slate-800 mb-4">
-                        {t("lexicon.taxonomy", "Taxonomia")}
+                        {t("lexicon.taxonomy")}
                       </Text>
                       <View className="flex-row flex-wrap" style={{ marginHorizontal: -8 }}>
                         {Object.entries(details.taxonomy).map(([key, value]) => {
@@ -195,7 +192,7 @@ export const LexiconDetailsScreen: React.FC<Props> = ({ accessToken, name, isPre
                         <View className="flex-1 bg-white rounded-3xl p-6 border border-slate-100" style={shadowLayering.core}>
                           <View className="flex-row items-center mb-3">
                             <Sprout color="#059669" size={20} />
-                            <Text className="text-lg font-bold text-slate-800 ml-2">Propagação</Text>
+                            <Text className="text-lg font-bold text-slate-800 ml-2">{t("lexicon.propagation")}</Text>
                           </View>
                           <View className="flex-row flex-wrap" style={{ gap: 8 }}>
                             {details.propagation_methods.map(method => (
@@ -211,7 +208,7 @@ export const LexiconDetailsScreen: React.FC<Props> = ({ accessToken, name, isPre
                         <View className="flex-1 bg-white rounded-3xl p-6 border border-slate-100" style={shadowLayering.core}>
                           <View className="flex-row items-center mb-3">
                             <Apple color="#ea580c" size={20} />
-                            <Text className="text-lg font-bold text-slate-800 ml-2">Comestível</Text>
+                            <Text className="text-lg font-bold text-slate-800 ml-2">{t("lexicon.edible")}</Text>
                           </View>
                           <View className="flex-row flex-wrap" style={{ gap: 8 }}>
                             {details.edible_parts.map(part => (
@@ -229,7 +226,7 @@ export const LexiconDetailsScreen: React.FC<Props> = ({ accessToken, name, isPre
                   {details.description && (
                     <View className="bg-white rounded-3xl p-6 border border-slate-100" style={shadowLayering.core}>
                       <Text className="text-xl font-bold text-slate-800 mb-3">
-                        {t("lexicon.description", "Descrição Botânica")}
+                        {t("lexicon.description")}
                       </Text>
                       <Text className="text-slate-600 leading-7 text-base text-justify">
                         {details.description.value}
@@ -241,7 +238,7 @@ export const LexiconDetailsScreen: React.FC<Props> = ({ accessToken, name, isPre
                   {details.synonyms && details.synonyms.length > 0 && (
                     <View className="bg-white rounded-3xl p-6 border border-slate-100" style={shadowLayering.core}>
                       <Text className="text-xl font-bold text-slate-800 mb-3">
-                        {t("lexicon.synonyms", "Sinônimos")}
+                        {t("lexicon.synonyms")}
                       </Text>
                       <View className="flex-row flex-wrap" style={{ gap: 8 }}>
                         {details.synonyms.map(syn => (

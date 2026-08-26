@@ -1,0 +1,19 @@
+appId: com.danzer.planticare
+---
+# Account creation flow. Assumes onboarding already completed.
+- launchApp:
+    clearState: false
+
+# Open the auth screen from the dashboard header (sign-in icon).
+- tapOn:
+    id: "sign-in-button"
+
+- assertVisible: "Create your account"
+- tapOn: "Email"
+- inputText: "appreview@planthelper.app"
+- tapOn: "Password"
+- inputText: "YOUR_DEMO_PASSWORD"
+- tapOn: "Create account"
+
+# Supabase sign-up may require email confirmation; assert the outcome loosely.
+- assertVisible: "Check your email"

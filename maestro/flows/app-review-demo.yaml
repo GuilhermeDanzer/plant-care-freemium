@@ -1,0 +1,65 @@
+appId: com.danzer.planticare
+---
+# ============================================================================
+# App Review rehearsal — mirrors docs/app-store/app-review-demo-script.md
+# This is the same "typical user flow" Apple expects in the screen recording.
+# Run it on a simulator as a dress rehearsal before recording on a device.
+# Assumes: English locale + a pre-seeded demo account (appreview@planthelper.app).
+# ============================================================================
+- launchApp:
+    clearState: true
+
+# ── Onboarding ──────────────────────────────────────────────────────────────
+- assertVisible: "Welcome to Plant Care"
+- tapOn: "Continue"
+- assertVisible: "Never forget to water"
+- tapOn: "Skip for now"
+- assertVisible: "All set!"
+- tapOn: "Start using"
+
+# ── Dashboard (empty guest state) ───────────────────────────────────────────
+- assertVisible: "No plants registered"
+
+# ── Sign in with the demo account (covers the login flow) ───────────────────
+- tapOn:
+    id: "sign-in-button"
+- tapOn: "Email"
+- inputText: "appreview@planthelper.app"
+- tapOn: "Password"
+- inputText: "YOUR_DEMO_PASSWORD"
+- tapOn: "Sign in"
+
+# ── Add a plant (manual path — deterministic, no camera) ────────────────────
+- tapOn:
+    id: "add-plant-button"
+- tapOn: "Add Manually"
+- tapOn: "Species / Plant Name *"
+- inputText: "Monstera"
+- tapOn: "Nickname (Optional)"
+- inputText: "Living Room"
+- tapOn: "Water every X days *"
+- inputText: "7"
+- tapOn: "Save Plant"
+- assertVisible: "Living Room"
+
+# ── Open plant detail + water (habit loop + streak) ─────────────────────────
+- tapOn: "Living Room"
+- tapOn:
+    id: "water-button"
+
+# ── Paywall / premium (paid content — Apple requires showing purchase flow) ──
+# From the plant detail, go back, then open the premium banner.
+- tapOn:
+    id: "back-button"
+- tapOn:
+    id: "premium-banner"
+- assertVisible: "Your jungle, limitless"
+- assertVisible: "Subscribe now"
+
+# ── Settings → restore + account deletion entry (deletion is a separate flow) ─
+- tapOn:
+    id: "paywall-close"
+- tapOn:
+    id: "settings-button"
+- assertVisible: "Settings"
+- assertVisible: "Delete account"

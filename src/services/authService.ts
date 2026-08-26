@@ -135,6 +135,44 @@ export const authService = {
   },
 
   /**
+   * Apaga a conta do usuário atual (permanente ou anônimo) no servidor.
+   *
+   * A exclusão real acontece na Edge Function `delete-account`, que valida o
+   * JWT do chamador e usa a `service_role` para remover o registro de
+   * `auth.users` (as linhas em `profiles`, `plants` e `journal_entries` caem
+   * via `ON DELETE CASCADE`). Em seguida, limpamos a sessão local e a
+   * identidade no RevenueCat — o reset do SQLite/notificações fica por conta
+   * do chamador (Settings), que conhece o `usePlantStore`.
+   */
+  deleteAccount: async (): Promise<void> => {
+    const { error } = await supabase.functions.invoke("delete-account", {});
+
+    if (error) {
+      let message = error.message;
+      try {
+        // `FunctionsHttpError.context` é o `Response` cru retornado pela função.
+        const context = (error as { context?: { json: () => Promise<unknown> } }).context;
+        if (context) {
+          const body = (await context.json()) as { error?: string };
+          if (body?.error) message = body.error;
+        }
+      } catch {
+        // Mantém `error.message` como fallback.
+      }
+      throw new Error(message);
+    }
+
+    // A conta já foi removida no servidor. A sessão local deve ser descartada
+    // mesmo que o `signOut` retorne erro (o usuário não existe mais).
+    try {
+      await supabase.auth.signOut();
+    } catch (e) {
+      console.warn("[authService.deleteAccount] signOut", e);
+    }
+    await clearRevenueCatIdentity();
+  },
+
+  /**
    * Assina mudanças de sessão (login, logout, refresh). Retorna o handle
    * para unsubscribe.
    */

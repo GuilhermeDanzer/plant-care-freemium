@@ -31,13 +31,6 @@ const GemIcon = Gem as unknown as ComponentType<{
 const CheckIcon = Check as unknown as ComponentType<{ color?: string; size?: number }>;
 const CloseIcon = X as unknown as ComponentType<{ color?: string; size?: number }>;
 
-const premiumBenefits = [
-  "Plantas ilimitadas",
-  "Guia de solo e luz por especialistas",
-  "Histórico completo de cuidados",
-  "Diagnóstico de saúde por IA",
-];
-
 export interface PaywallModalProps {
   onClose: () => void;
 }
@@ -94,7 +87,7 @@ export function PaywallModal({ onClose }: PaywallModalProps) {
         showInfoToast(t("paywall.restoreErrorBody"));
       }
     } catch (error) {
-      showErrorToast("Erro", "Não foi possível restaurar.");
+      showErrorToast(t("paywall.restoreFailTitle"), t("paywall.restoreFailBody"));
     } finally {
       setIsRestoring(false);
     }

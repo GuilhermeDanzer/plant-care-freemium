@@ -38,3 +38,12 @@ export const shadowCastEmerald: ViewStyle = {
   shadowRadius: 22,
   elevation: 12,
 };
+
+/** Sombra suave para botões circulares de "voltar". */
+export const shadowBackButton: ViewStyle = {
+  shadowColor: "#0f172a",
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.1,
+  shadowRadius: 6,
+  elevation: 4,
+};

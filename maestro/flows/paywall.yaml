@@ -1,0 +1,20 @@
+appId: com.danzer.planticare
+---
+# Paywall / premium flow (RevenueCat sandbox in a dev build).
+- launchApp:
+    clearState: false
+
+# Open the paywall from the premium banner.
+- tapOn:
+    id: "premium-banner"
+
+- assertVisible: "Your jungle, limitless"
+- assertVisible: "Subscribe now"
+- assertVisible: "Restore purchases"
+
+# Exercise restore (non-destructive — no purchase required for a smoke test).
+- tapOn: "Restore purchases"
+
+# Close the paywall.
+- tapOn:
+    id: "paywall-close"

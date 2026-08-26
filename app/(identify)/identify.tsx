@@ -8,6 +8,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useIdentifyPlant } from "@/hooks/useIdentifyPlant";
 import { usePlantStore } from "@/store/usePlantStore";
 import { FREE_PLANT_LIMIT } from "@/utils/constants";
+import { permissionService } from "@/services/permissionService";
 import { showErrorToast, showInfoToast } from "@/utils/showToasts";
 
 const CameraIcon = Camera as unknown as ComponentType<{ color?: string; size?: number }>;
@@ -38,12 +39,14 @@ export default function IdentifyRoute() {
     if (atFreeLimit) return;
 
     try {
-      const permission = await ImagePicker.requestCameraPermissionsAsync();
-      if (!permission.granted) {
-        showInfoToast(
-          t("identify.permissionNeededTitle"),
-          t("identify.permissionCameraBody")
-        );
+      const permission = await permissionService.ensureCameraPermission();
+      if (permission !== "granted") {
+        if (permission === "denied") {
+          showInfoToast(
+            t("identify.permissionNeededTitle"),
+            t("identify.permissionCameraBody")
+          );
+        }
         return;
       }
 
@@ -65,12 +68,14 @@ export default function IdentifyRoute() {
     if (atFreeLimit) return;
 
     try {
-      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (!permission.granted) {
-        showInfoToast(
-          t("identify.permissionNeededTitle"),
-          t("identify.permissionGalleryBody")
-        );
+      const permission = await permissionService.ensureMediaLibraryPermission();
+      if (permission !== "granted") {
+        if (permission === "denied") {
+          showInfoToast(
+            t("identify.permissionNeededTitle"),
+            t("identify.permissionGalleryBody")
+          );
+        }
         return;
       }
 

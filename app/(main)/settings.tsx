@@ -31,10 +31,12 @@ export default function SettingsRoute() {
 
   const handleToggleNotifications = async (value: boolean) => {
     if (value) {
-      const granted = await notificationService.requestPermissions();
-      if (!granted) {
-        showInfoToast(t("settings.permissionDeniedTitle"), t("settings.permissionDeniedBody"));
+      const result = await notificationService.requestPermissions();
+      if (result !== "granted") {
         setNotificationsEnabled(false);
+        if (result === "denied") {
+          showInfoToast(t("settings.permissionDeniedTitle"), t("settings.permissionDeniedBody"));
+        }
         return;
       }
     }
@@ -69,15 +71,17 @@ export default function SettingsRoute() {
   };
 
   const handleTestNotification = async () => {
-    const granted = await notificationService.requestPermissions();
-    if (!granted) {
-      showInfoToast(t("settings.permissionDeniedTitle"));
+    const result = await notificationService.requestPermissions();
+    if (result !== "granted") {
+      if (result === "denied") {
+        showInfoToast(t("settings.permissionDeniedTitle"));
+      }
       return;
     }
     await Notifications.scheduleNotificationAsync({
       content: {
-        title: "Teste de Notificação 🧪",
-        body: "Isso é um teste. Funciona no background!",
+        title: t("settings.testNotificationTitle"),
+        body: t("settings.testNotificationBody"),
         sound: true,
       },
       trigger: {
@@ -100,6 +104,11 @@ export default function SettingsRoute() {
           onPress: async () => {
             try {
               await authService.deleteAccount();
+              // Remove os dados locais (SQLite + notificações) e reseta o
+              // estado global — a conta já não existe mais no servidor.
+              await usePlantStore.getState().resetGarden();
+              await notificationService.cancelAllScheduledNotifications();
+              usePlantStore.getState().setUser(null);
               showSuccessToast(t("settings.deleteAccountSuccess"));
               router.replace("/");
             } catch (error: any) {
@@ -144,7 +153,7 @@ export default function SettingsRoute() {
                 <Text className="text-base font-semibold text-slate-800">
                   {currentLanguage === 'pt-BR' ? 'Português' : 'English'}
                 </Text>
-                <Text className="text-sm text-slate-500">Mudar idioma / Change language</Text>
+                <Text className="text-sm text-slate-500">{t("settings.changeLanguage")}</Text>
               </View>
             </View>
             <Switch

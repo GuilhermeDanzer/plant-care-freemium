@@ -1,34 +1,12 @@
-import { type ComponentType } from "react";
-import {
-  Droplets,
-  Leaf,
-  ShieldCheck,
-  Sparkles,
-  Sprout,
-  Sun,
-} from "lucide-react-native";
 import { Text, View } from "react-native";
-import { DiseaseSuggestion } from "@/types/plant";
+import { useTranslation } from "react-i18next";
+import { BulletSection } from "@/components/health/BulletSection";
+import { ShieldIcon, SparklesIcon } from "@/components/icons";
 import { shadowLayering } from "@/utils/shadows";
+import type { DiseaseSuggestion } from "@/types/plant";
+import type { InsightTone } from "@/types/health";
 
-type IconComponent = ComponentType<{ color?: string; size?: number }>;
-
-const DropletsIcon = Droplets as unknown as IconComponent;
-const LeafIcon = Leaf as unknown as IconComponent;
-const ShieldIcon = ShieldCheck as unknown as IconComponent;
-const SparklesIcon = Sparkles as unknown as IconComponent;
-const SproutIcon = Sprout as unknown as IconComponent;
-const SunIcon = Sun as unknown as IconComponent;
-
-const pickBulletIcon = (text: string): IconComponent => {
-  const t = text.toLowerCase();
-  if (/(água|agua|water|rega|molha|umid|hidra)/.test(t)) return DropletsIcon;
-  if (/(luz|sol\b|sun|ilumin|shade|sombra)/.test(t)) return SunIcon;
-  if (/(solo|soil|nutrient|adub|fertil|repot|vaso|drena)/.test(t)) return SproutIcon;
-  return LeafIcon;
-};
-
-export type InsightTone = "optimization" | "critical";
+export type { InsightTone } from "@/types/health";
 
 const TONE: Record<
   InsightTone,
@@ -36,7 +14,7 @@ const TONE: Record<
     chipBg: string;
     chipText: string;
     eyebrow: string;
-    label: string;
+    label: "health.optimizationLabel" | "health.criticalLabel";
     sectionTint: string;
   }
 > = {
@@ -44,36 +22,16 @@ const TONE: Record<
     chipBg: "bg-amber-50",
     chipText: "text-amber-700",
     eyebrow: "text-amber-700",
-    label: "Oportunidade de melhoria",
+    label: "health.optimizationLabel",
     sectionTint: "#d97706",
   },
   critical: {
     chipBg: "bg-rose-50",
     chipText: "text-rose-700",
     eyebrow: "text-rose-700",
-    label: "Doença detectada",
+    label: "health.criticalLabel",
     sectionTint: "#e11d48",
   },
-};
-
-interface BulletRow {
-  text: string;
-  kind: "prevention" | "biological";
-}
-
-const buildBullets = (suggestion: DiseaseSuggestion): BulletRow[] => {
-  const prevention = suggestion.details?.treatment?.prevention ?? [];
-  const biological = suggestion.details?.treatment?.biological ?? [];
-  return [
-    ...prevention.slice(0, 4).map((text) => ({
-      text,
-      kind: "prevention" as const,
-    })),
-    ...biological.slice(0, 4).map((text) => ({
-      text,
-      kind: "biological" as const,
-    })),
-  ];
 };
 
 export interface HealthInsightCardProps {
@@ -81,17 +39,25 @@ export interface HealthInsightCardProps {
   tone?: InsightTone;
 }
 
+/**
+ * Card for a single disease/optimization suggestion: header with probability
+ * chip, description, probable cause, and bullet sections for treatment steps.
+ */
 export function HealthInsightCard({
   suggestion,
   tone = "optimization",
 }: HealthInsightCardProps) {
+  const { t } = useTranslation();
   const palette = TONE[tone];
   const probability = Math.round(Number(suggestion.probability ?? 0) * 100);
   const title =
-    suggestion.details?.local_name ?? suggestion.name ?? "Possível causa";
+    suggestion.details?.local_name ??
+    suggestion.name ??
+    t("health.possibleCause");
   const description = suggestion.details?.description?.trim();
   const cause = suggestion.details?.cause?.trim();
-  const bullets = buildBullets(suggestion);
+  const prevention = suggestion.details?.treatment?.prevention ?? [];
+  const biological = suggestion.details?.treatment?.biological ?? [];
 
   return (
     <View style={shadowLayering.cast}>
@@ -105,7 +71,7 @@ export function HealthInsightCard({
             <Text
               className={`text-[10px] font-semibold uppercase tracking-[2px] ${palette.eyebrow}`}
             >
-              {palette.label}
+              {t(palette.label)}
             </Text>
             <Text className="mt-1 text-base font-bold tracking-tight text-slate-900">
               {title}
@@ -115,7 +81,7 @@ export function HealthInsightCard({
                 className="mt-1 text-xs text-slate-500"
                 numberOfLines={2}
               >
-                Causa provável: {cause}
+                {t("health.probableCause", { cause })}
               </Text>
             ) : null}
           </View>
@@ -138,78 +104,22 @@ export function HealthInsightCard({
           </Text>
         ) : null}
 
-        {bullets.length > 0 ? (
+        {prevention.length > 0 || biological.length > 0 ? (
           <View className="mt-4 gap-3">
             <BulletSection
               icon={ShieldIcon}
               tint="#059669"
-              label="Ações imediatas"
-              items={bullets.filter((b) => b.kind === "prevention").map((b) => b.text)}
+              label={t("health.immediateActions")}
+              items={prevention.slice(0, 4)}
             />
             <BulletSection
               icon={SparklesIcon}
               tint="#0ea5e9"
-              label="Cuidados naturais"
-              items={bullets
-                .filter((b) => b.kind === "biological")
-                .map((b) => b.text)}
+              label={t("health.naturalCare")}
+              items={biological.slice(0, 4)}
             />
           </View>
         ) : null}
-      </View>
-    </View>
-  );
-}
-
-interface BulletSectionProps {
-  icon: IconComponent;
-  tint: string;
-  label: string;
-  items: string[];
-}
-
-function BulletSection({ icon: SectionIcon, tint, label, items }: BulletSectionProps) {
-  if (items.length === 0) return null;
-
-  return (
-    <View className="rounded-2xl border border-slate-100 bg-slate-50/60 p-3">
-      <View className="flex-row items-center">
-        <View
-          className="mr-2 items-center justify-center rounded-full"
-          style={{
-            height: 22,
-            width: 22,
-            backgroundColor: `${tint}14`,
-          }}
-        >
-          <SectionIcon color={tint} size={12} />
-        </View>
-        <Text className="text-[11px] font-semibold uppercase tracking-widest text-slate-500">
-          {label}
-        </Text>
-      </View>
-
-      <View className="mt-2 gap-2">
-        {items.map((text, idx) => {
-          const BulletIcon = pickBulletIcon(text);
-          return (
-            <View key={`${label}-${idx}`} className="flex-row items-start">
-              <View
-                className="mr-2.5 mt-0.5 items-center justify-center rounded-full"
-                style={{
-                  height: 22,
-                  width: 22,
-                  backgroundColor: `${tint}12`,
-                }}
-              >
-                <BulletIcon color={tint} size={12} />
-              </View>
-              <Text className="flex-1 text-sm leading-5 text-slate-700">
-                {text}
-              </Text>
-            </View>
-          );
-        })}
       </View>
     </View>
   );

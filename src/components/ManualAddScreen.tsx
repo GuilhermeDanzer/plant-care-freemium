@@ -13,6 +13,7 @@ import * as ImagePicker from "expo-image-picker";
 import { Camera, Image as ImageIcon } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/Input";
+import { permissionService } from "@/services/permissionService";
 
 export interface Plant {
   id?: string;
@@ -48,8 +49,8 @@ export function ManualAddScreen({ onSave, onCancel }: ManualAddScreenProps) {
   };
 
   const handleTakeImage = async () => {
-    const permission = await ImagePicker.requestCameraPermissionsAsync();
-    if (!permission.granted) return;
+    const permission = await permissionService.ensureCameraPermission();
+    if (permission !== "granted") return;
 
     const result = await ImagePicker.launchCameraAsync({
       mediaTypes: ["images"],
@@ -65,12 +66,12 @@ export function ManualAddScreen({ onSave, onCancel }: ManualAddScreenProps) {
   const validateAndSave = () => {
     const newErrors: { species?: string; watering?: string } = {};
     if (!speciesName.trim()) {
-      newErrors.species = t("manualAdd.errorSpecies", "A espécie ou nome comum é obrigatório.");
+      newErrors.species = t("manualAdd.errorSpecies");
     }
     
     const days = parseInt(wateringFrequencyDays, 10);
     if (isNaN(days) || days <= 0) {
-      newErrors.watering = t("manualAdd.errorWatering", "Frequência de rega inválida.");
+      newErrors.watering = t("manualAdd.errorWatering");
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -127,7 +128,7 @@ export function ManualAddScreen({ onSave, onCancel }: ManualAddScreenProps) {
               onPress={handleTakeImage}
             >
               <Camera color="#059669" size={16} />
-              <Text className="text-emerald-700 font-semibold text-sm">{t("manualAdd.camera", "Câmera")}</Text>
+              <Text className="text-emerald-700 font-semibold text-sm">{t("manualAdd.camera")}</Text>
             </TouchableOpacity>
             
             <TouchableOpacity 
@@ -135,7 +136,7 @@ export function ManualAddScreen({ onSave, onCancel }: ManualAddScreenProps) {
               onPress={handlePickImage}
             >
               <ImageIcon color="#475569" size={16} />
-              <Text className="text-slate-700 font-semibold text-sm">{t("manualAdd.gallery", "Galeria")}</Text>
+              <Text className="text-slate-700 font-semibold text-sm">{t("manualAdd.gallery")}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -143,8 +144,8 @@ export function ManualAddScreen({ onSave, onCancel }: ManualAddScreenProps) {
         {/* Form Inputs */}
         <View className="mb-4">
           <Input
-            label={t("manualAdd.speciesLabel", "Espécie / Nome da Planta *")}
-            placeholder={t("manualAdd.speciesPlaceholder", "Ex: Costela de Adão, Zamioculca...")}
+            label={t("manualAdd.speciesLabel")}
+            placeholder={t("manualAdd.speciesPlaceholder")}
             value={speciesName}
             onChangeText={(text) => { setSpeciesName(text); setErrors(prev => ({...prev, species: undefined})); }}
             error={errors.species}
@@ -153,8 +154,8 @@ export function ManualAddScreen({ onSave, onCancel }: ManualAddScreenProps) {
 
         <View className="mb-4">
           <Input
-            label={t("manualAdd.nicknameLabel", "Apelido (Opcional)")}
-            placeholder={t("manualAdd.nicknamePlaceholder", "Ex: Plantinha da Sala")}
+            label={t("manualAdd.nicknameLabel")}
+            placeholder={t("manualAdd.nicknamePlaceholder")}
             value={nickname}
             onChangeText={setNickname}
           />
@@ -162,8 +163,8 @@ export function ManualAddScreen({ onSave, onCancel }: ManualAddScreenProps) {
 
         <View className="mb-8">
           <Input
-            label={t("manualAdd.wateringLabel", "Regar a cada X dias *")}
-            placeholder={t("manualAdd.wateringPlaceholder", "Ex: 7")}
+            label={t("manualAdd.wateringLabel")}
+            placeholder={t("manualAdd.wateringPlaceholder")}
             keyboardType="numeric"
             value={wateringFrequencyDays}
             onChangeText={(text) => { setWateringFrequencyDays(text); setErrors(prev => ({...prev, watering: undefined})); }}
@@ -176,14 +177,14 @@ export function ManualAddScreen({ onSave, onCancel }: ManualAddScreenProps) {
           className="w-full bg-emerald-600 py-4 rounded-2xl items-center mb-3 shadow-sm"
           onPress={validateAndSave}
         >
-          <Text className="text-white font-bold text-lg">{t("manualAdd.saveBtn", "Salvar Planta")}</Text>
+          <Text className="text-white font-bold text-lg">{t("manualAdd.saveBtn")}</Text>
         </TouchableOpacity>
         
         <TouchableOpacity
           className="w-full py-4 rounded-2xl items-center"
           onPress={onCancel}
         >
-          <Text className="text-slate-500 font-semibold text-base">{t("manualAdd.cancelBtn", "Cancelar")}</Text>
+          <Text className="text-slate-500 font-semibold text-base">{t("manualAdd.cancelBtn")}</Text>
         </TouchableOpacity>
 
             </ScrollView>

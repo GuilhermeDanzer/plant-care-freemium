@@ -23,7 +23,7 @@ export function AddPlantActionSheet({
       <View className="flex-1 justify-end bg-black/50">
         <View className="bg-white rounded-t-3xl p-6 shadow-xl">
           <View className="flex-row justify-between items-center mb-6">
-            <Text className="text-xl font-bold text-slate-800">{t("addPlant.title", "Adicionar Planta")}</Text>
+            <Text className="text-xl font-bold text-slate-800">{t("addPlant.title")}</Text>
             <TouchableOpacity onPress={onClose} className="p-2 bg-slate-100 rounded-full">
               <X color="#64748b" size={20} />
             </TouchableOpacity>
@@ -38,10 +38,10 @@ export function AddPlantActionSheet({
             </View>
             <View className="flex-1">
               <Text className="text-lg font-bold text-emerald-800 mb-1">
-                {t("addPlant.aiOption", "Identificar com IA")}
+                {t("addPlant.aiOption")}
               </Text>
               <Text className="text-sm text-emerald-600 font-medium">
-                {t("addPlant.aiCost", "✨ Custa 1 Crédito")}
+                {t("addPlant.aiCost")}
               </Text>
             </View>
           </TouchableOpacity>
@@ -55,10 +55,10 @@ export function AddPlantActionSheet({
             </View>
             <View className="flex-1">
               <Text className="text-lg font-bold text-slate-800 mb-1">
-                {t("addPlant.manualOption", "Adicionar Manualmente")}
+                {t("addPlant.manualOption")}
               </Text>
               <Text className="text-sm text-slate-500 font-medium">
-                {t("addPlant.manualCost", "Gratuito")}
+                {t("addPlant.manualCost")}
               </Text>
             </View>
           </TouchableOpacity>

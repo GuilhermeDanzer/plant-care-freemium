@@ -40,3 +40,12 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# test coverage output
+/coverage
+
+# sample plant images used for the App Review recording (not committed)
+/assets/sample-plants/*.jpg
+/assets/sample-plants/*.jpeg
+/assets/sample-plants/*.png
+

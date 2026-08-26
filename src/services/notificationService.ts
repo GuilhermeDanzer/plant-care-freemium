@@ -1,16 +1,23 @@
 import * as Notifications from "expo-notifications";
+import i18n from "@/i18n";
+import { permissionService } from "@/services/permissionService";
+import type { PermissionCheck } from "@/services/permissionService";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { PlantRecord } from "@/types/plant";
 
 export const notificationService = {
-  requestPermissions: async (): Promise<boolean> => {
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
-    let finalStatus = existingStatus;
-    if (existingStatus !== "granted") {
-      const { status } = await Notifications.requestPermissionsAsync();
-      finalStatus = status;
+  requestPermissions: (): Promise<PermissionCheck> =>
+    permissionService.ensureNotificationPermission(),
+
+  cancelAllScheduledNotifications: async (): Promise<void> => {
+    try {
+      await Notifications.cancelAllScheduledNotificationsAsync();
+    } catch (error) {
+      console.warn(
+        "[notificationService] Failed to cancel scheduled notifications.",
+        error
+      );
     }
-    return finalStatus === "granted";
   },
 
   syncWateringNotifications: async (plants: PlantRecord[]): Promise<void> => {
@@ -53,8 +60,8 @@ export const notificationService = {
       
       await Notifications.scheduleNotificationAsync({
         content: {
-          title: "Hora de regar! 💧",
-          body: `Sua planta "${plantName}" está precisando de água.`,
+          title: i18n.t("manualAdd.notificationTitle"),
+          body: i18n.t("manualAdd.notificationBody", { plantName }),
           sound: true,
         },
         trigger: {

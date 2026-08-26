@@ -8,6 +8,7 @@
       ]
     },
     "strict": true,
-    "types": ["nativewind/types"]
-  }
+    "types": ["nativewind/types", "jest"]
+  },
+  "exclude": ["supabase"]
 }

@@ -4,6 +4,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as FileSystem from "expo-file-system";
 import { supabase } from "@/lib/supabase";
 import {
+  clearAllLocalData,
   countMyPlants,
   deletePlantById,
   getMyPlants,
@@ -21,6 +22,7 @@ import {
 import { authService } from "@/services/authService";
 import { plantService } from "@/services/plantService";
 import { subscriptionService } from "@/services/subscriptionService";
+import { notificationService } from "@/services/notificationService";
 import { AppUser, HealthAssessmentResponse, PlantRecord, JournalEntry } from "@/types/plant";
 import { performFullSync } from "@/services/SyncService";
 import { FREE_PLANT_LIMIT } from "@/utils/constants";
@@ -54,6 +56,10 @@ interface PlantStoreState {
   setPremium: (value: boolean) => void;
   setUser: (user: AppUser | null) => void;
   signOut: () => Promise<void>;
+  /** Clears in-memory garden state (plants, hydration flag, last sync). */
+  clearGarden: () => void;
+  /** Clears the local SQLite garden + in-memory state. Used on logout. */
+  resetGarden: () => Promise<void>;
 
   /** Lê o status atual do RevenueCat e hidrata `isPremium`. */
   syncSubscription: () => Promise<void>;
@@ -189,10 +195,30 @@ export const usePlantStore = create<PlantStoreState>()(
     } catch (error) {
       console.warn("[usePlantStore.signOut] Falha ao encerrar sessão.", error);
     }
-    // O listener em useAuth (onAuthStateChange → SIGNED_OUT) também zera o
-    // user, mas limpamos aqui imediatamente para a UI reagir sem esperar.
-    // Premium também volta a false: sem sessão, não há entitlement ativo.
+    // The useAuth listener (onAuthStateChange -> SIGNED_OUT) also clears the
+    // user, but we reset here immediately so the UI reacts without waiting.
+    // Premium also goes back to false: without a session there is no active
+    // entitlement. Local plants are wiped so a different account logging in
+    // does not inherit the previous user's offline garden.
+    await get().resetGarden();
+    await notificationService.cancelAllScheduledNotifications();
     set({ user: null, isAuthenticated: false, isPremium: false });
+  },
+
+  clearGarden: () => {
+    set({ plants: [], hasLoaded: false, lastSyncedAt: null });
+  },
+
+  resetGarden: async () => {
+    try {
+      await clearAllLocalData();
+    } catch (error) {
+      console.warn(
+        "[usePlantStore.resetGarden] Falha ao limpar dados locais.",
+        error
+      );
+    }
+    get().clearGarden();
   },
 
   syncSubscription: async () => {

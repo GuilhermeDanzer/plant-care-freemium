@@ -122,9 +122,9 @@ export default function MainIndexRoute() {
           nextWateringAt: adj.adjustedNextWateringDate.toISOString()
         });
       }
-      showSuccessToast("Sucesso", "Cronogramas de rega otimizados com IA!");
+      showSuccessToast(t("home.scheduleSuccessTitle"), t("home.scheduleSuccessBody"));
     } else {
-      showErrorToast("Erro", "Não foi possível otimizar os cronogramas no momento.");
+      showErrorToast(t("home.scheduleFailTitle"), t("home.scheduleFailBody"));
     }
   };
 
@@ -159,7 +159,7 @@ export default function MainIndexRoute() {
                 onPress={() => router.push('/lexicon')}
                 className="h-10 w-10 items-center justify-center rounded-full bg-white"
                 style={shadowLayering.core}
-                accessibilityLabel="Plant Lexicon"
+                accessibilityLabel={t("lexicon.accessibilityTitle")}
               >
                 <BookIcon color="#047857" size={18} />
               </TouchableOpacity>
@@ -215,7 +215,7 @@ export default function MainIndexRoute() {
               <Sparkles color="#2563eb" size={18} className="mr-2" />
             )}
             <Text className="text-blue-700 font-bold">
-              {isOptimizing ? "Otimizando..." : "✨ Otimizar Rega com IA"}
+              {isOptimizing ? t("home.optimizing") : t("home.optimizeAI")}
             </Text>
           </TouchableOpacity>
         ) : null}
@@ -223,7 +223,7 @@ export default function MainIndexRoute() {
         {urgentTasks.length > 0 && !isEditing ? (
           <View className="px-2 mb-2">
             <Text className="text-lg font-bold text-slate-800 mb-2">
-              {t("home.tasksToday", "Tarefas de Hoje")}
+              {t("home.tasksToday")}
             </Text>
             {urgentTasks.map((task) => (
               <TaskCard key={task.id} task={task} />

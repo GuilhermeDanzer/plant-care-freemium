@@ -106,6 +106,10 @@ export function useAuth(): UseAuthResult {
           break;
         case "SIGNED_OUT":
           setUser(null);
+          // Memory-only reset: do NOT wipe SQLite here. This event can fire
+          // transiently when an anonymous session is upgraded to a real
+          // account, and the guest's plants must survive to be pushed.
+          usePlantStore.getState().clearGarden();
           break;
         default:
           break;

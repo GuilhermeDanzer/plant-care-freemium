@@ -3,6 +3,7 @@ import React from "react";
 import * as Notifications from "expo-notifications";
 import { useTranslation } from "react-i18next";
 import { ManualAddScreen, Plant } from "@/components/ManualAddScreen";
+import { permissionService } from "@/services/permissionService";
 import { usePlantStore } from "@/store/usePlantStore";
 import { calculateNextWateringAt } from "@/utils/dateUtils";
 
@@ -12,8 +13,8 @@ export default function ManualAddRoute() {
   const addPlant = usePlantStore((state) => state.addPlant);
 
   const scheduleWateringNotification = async (plantName: string, nextWateringDate: Date) => {
-    const { status } = await Notifications.requestPermissionsAsync();
-    if (status !== 'granted') return;
+    const permission = await permissionService.ensureNotificationPermission();
+    if (permission !== 'granted') return;
 
     const secondsUntilWatering = Math.floor((nextWateringDate.getTime() - Date.now()) / 1000);
     if (secondsUntilWatering > 0) {

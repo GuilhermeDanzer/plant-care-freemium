@@ -26,6 +26,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import Reanimated, {
   cancelAnimation,
   interpolate,
+  type SharedValue,
   useAnimatedScrollHandler,
   useAnimatedStyle,
   useSharedValue,
@@ -46,7 +47,7 @@ function DropletsTest() {
     transform: [{ scale: wateringScale.value }],
   }))
 
-  const createDropletStyle = (animValue: Reanimated.SharedValue<number>, delayOffset: number) => {
+  const createDropletStyle = (animValue: SharedValue<number>, delayOffset: number) => {
     return useAnimatedStyle(() => {
       // Start transparent, fade in quickly, fade out at bottom
       const opacity = interpolate(animValue.value, [0, 0.1, 0.8, 1], [0, 1, 1, 0])
@@ -277,6 +278,8 @@ function ParallaxTest() {
 export default function AnimTestScreen() {
   const router = useRouter()
 
+  if (!__DEV__) return null
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#f8fafc' }} edges={['top', 'bottom']}>
       <ScrollView contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 48 }} showsVerticalScrollIndicator={false}>
@@ -413,6 +416,17 @@ const styles = StyleSheet.create({
     height: 20,
     borderRadius: 10,
     backgroundColor: '#6ee7b7',
+  },
+  dropletOverlay: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  droplet: {
+    position: 'absolute',
+    top: 0,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#a7f3d0',
   },
   waterBtnContent: {
     flexDirection: 'row',

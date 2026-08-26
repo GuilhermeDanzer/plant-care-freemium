@@ -8,6 +8,7 @@ import { Platform, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as Notifications from "expo-notifications";
 import { Droplet } from "lucide-react-native";
+import { permissionService } from "@/services/permissionService";
 import { usePlantStore } from "@/store/usePlantStore";
 import { IdentifiedPlant } from "@/types/plant";
 import {
@@ -69,15 +70,15 @@ export default function SetupRoute() {
   };
 
   const scheduleWateringNotification = async (plantName: string, nextWateringDate: Date) => {
-    const { status } = await Notifications.requestPermissionsAsync();
-    if (status !== 'granted') return;
+    const permission = await permissionService.ensureNotificationPermission();
+    if (permission !== 'granted') return;
 
     const secondsUntilWatering = Math.floor((nextWateringDate.getTime() - Date.now()) / 1000);
     if (secondsUntilWatering > 0) {
       await Notifications.scheduleNotificationAsync({
         content: {
-          title: "Time to water your plant! 💧",
-          body: `${plantName} is thirsty. Check the soil and give it some water today!`,
+          title: t("manualAdd.notificationTitle"),
+          body: t("manualAdd.notificationBody", { plantName }),
         },
         trigger: { 
           type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
