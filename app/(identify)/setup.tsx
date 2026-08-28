@@ -15,6 +15,7 @@ import {
   calculateNextWateringAt,
   mapWateringLevelToDays,
 } from "@/utils/dateUtils";
+import { showErrorToast } from "@/utils/showToasts";
 
 // Configure notifications to show alert when app is in foreground
 Notifications.setNotificationHandler({
@@ -107,6 +108,8 @@ export default function SetupRoute() {
     if (added) {
       await scheduleWateringNotification(identifiedPlant.name, new Date(nextWateringAt));
       router.replace("/(main)");
+    } else {
+      showErrorToast(t("common.error"), t("common.unknownError"));
     }
   };
 

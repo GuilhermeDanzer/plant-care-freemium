@@ -11,7 +11,7 @@ product purpose.
 - **What it powers:** email/password + anonymous (guest) sign-in, cloud sync of
   the plant garden, and the server-side `delete-account` flow.
 - **Data stored:** user accounts, `profiles`, `plants`, `journal_entries`, and
-  user-uploaded photos (`user_media` storage bucket).
+  user-uploaded photos (`plant-images` storage bucket).
 - **Docs/links:** https://supabase.com
 
 ## 2. RevenueCat (subscriptions / payments)

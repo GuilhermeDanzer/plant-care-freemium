@@ -6,6 +6,7 @@ import { ManualAddScreen, Plant } from "@/components/ManualAddScreen";
 import { permissionService } from "@/services/permissionService";
 import { usePlantStore } from "@/store/usePlantStore";
 import { calculateNextWateringAt } from "@/utils/dateUtils";
+import { showErrorToast } from "@/utils/showToasts";
 
 export default function ManualAddRoute() {
   const router = useRouter();
@@ -50,6 +51,8 @@ export default function ManualAddRoute() {
     if (added) {
       await scheduleWateringNotification(plant.speciesName, new Date(nextWateringAt));
       router.replace("/(main)");
+    } else {
+      showErrorToast(t("common.error"), t("common.unknownError"));
     }
   };
 

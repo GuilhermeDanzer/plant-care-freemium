@@ -14,9 +14,9 @@ resolution center, if asked).
 
 **Contact information**
 
-- Name / role: _(fill in)_
-- Email: _(fill in)_
-- Phone: _(fill in)_
+- Name / role: Guilherme Danzer de Oliveira / Owner
+- Email: developer@example.com
+- Phone: +1 (555) 000-0000
 
 **Testing notes**
 

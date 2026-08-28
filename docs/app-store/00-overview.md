@@ -15,6 +15,8 @@ permissions.
 | 6 | Regional differences | `regional-support.md` |
 | 7 | Regulated industry / protected material | `regulated-industry.md` |
 | — | Ready-to-paste App Review Information | `apple-review-notes.md` |
+| — | Single-field Notes (≤ 4,000 chars, Q2–7) | `app-review-note-4000.md` |
+| — | Reusable prompt to regenerate the Notes text | `PROMPT-generate-review-note.md` |
 
 ## Quick facts
 

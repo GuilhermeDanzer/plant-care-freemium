@@ -3,7 +3,7 @@
 This document outlines the features currently implemented in the PlantHelper application, along with their status and relevant components.
 
 ## 1. Authentication & Onboarding
-- **Description:** User authentication flow using Supabase, including email/password login, signup, password reset, and an onboarding tutorial for new users. On logout the local garden is cleared; plants registered as a guest are pushed to the user's account on login. Account deletion is performed by the `delete-account` Supabase Edge Function, which validates the caller's JWT, hard-deletes the user with the service role (cascading to `profiles`, `plants`, `journal_entries`), removes their `user_media` storage objects, and then clears the local session, RevenueCat identity, SQLite garden and scheduled notifications.
+- **Description:** User authentication flow using Supabase, including email/password login, signup, password reset, and an onboarding tutorial for new users. On logout the local garden is cleared; plants registered as a guest are pushed to the user's account on login. Account deletion is performed by the `delete-account` Supabase Edge Function, which validates the caller's JWT, hard-deletes the user with the service role (cascading to `profiles`, `plants`, `journal_entries`), removes their `plant-images` storage objects, and then clears the local session, RevenueCat identity, SQLite garden and scheduled notifications.
 - **Status:** Done
 - **Main Files:**
   - `app/auth.tsx`

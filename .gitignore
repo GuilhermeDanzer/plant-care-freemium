@@ -49,3 +49,6 @@ yarn-error.*
 /assets/sample-plants/*.jpeg
 /assets/sample-plants/*.png
 
+# build artifacts
+*.ipa
+

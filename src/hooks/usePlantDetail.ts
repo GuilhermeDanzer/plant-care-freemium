@@ -84,16 +84,20 @@ export function usePlantDetail(plantId: string | undefined) {
       return;
     }
 
-    await updatePlant(plant.id, {
+    const updated = await updatePlant(plant.id, {
       nickname: trimmed.length === 0 ? null : trimmed,
     });
     setIsEditingName(false);
-    showSuccessToast(
-      t("plantDetail.toastUpdatedTitle"),
-      trimmed.length === 0
-        ? t("plantDetail.toastUpdatedOriginal")
-        : t("plantDetail.toastUpdatedNickname", { nickname: trimmed })
-    );
+    if (updated) {
+      showSuccessToast(
+        t("plantDetail.toastUpdatedTitle"),
+        trimmed.length === 0
+          ? t("plantDetail.toastUpdatedOriginal")
+          : t("plantDetail.toastUpdatedNickname", { nickname: trimmed })
+      );
+    } else {
+      showErrorToast(t("common.error"), t("common.unknownError"));
+    }
   };
 
   const handleCancelEdit = () => {

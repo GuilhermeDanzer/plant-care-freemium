@@ -71,8 +71,12 @@ export default function MainIndexRoute() {
     }));
 
   const handleDeletePlant = async (plantId: string, plantName: string) => {
-    await deletePlant(plantId);
-    showSuccessToast(t("home.plantDeletedTitle"), t("home.plantDeletedBody", { plantName }));
+    const deleted = await deletePlant(plantId);
+    if (deleted) {
+      showSuccessToast(t("home.plantDeletedTitle"), t("home.plantDeletedBody", { plantName }));
+    } else {
+      showErrorToast(t("common.error"), t("common.unknownError"));
+    }
   };
 
   const handleOpenPlant = (plantId: string) => {

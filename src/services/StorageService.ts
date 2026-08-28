@@ -26,7 +26,7 @@ export const uploadImageToSupabase = async (
     const fileName = `${userId}/${folder}/${Crypto.randomUUID()}.${ext}`;
 
     const { data, error } = await supabase.storage
-      .from("user_media")
+      .from("plant-images")
       .upload(fileName, decode(base64), {
         contentType: `image/${ext === 'png' ? 'png' : 'jpeg'}`,
       });
@@ -37,7 +37,7 @@ export const uploadImageToSupabase = async (
     }
 
     const { data: publicUrlData } = supabase.storage
-      .from("user_media")
+      .from("plant-images")
       .getPublicUrl(data.path);
 
     return publicUrlData.publicUrl;

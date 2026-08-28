@@ -88,6 +88,15 @@ describe("subscriptionService", () => {
     expect(status.isActive).toBe(false);
   });
 
+  it("purchasePackage rethrows non-cancellation errors", async () => {
+    mockedPurchases.getOfferings.mockResolvedValue({
+      current: { monthly: {} },
+    } as any);
+    mockedPurchases.purchasePackage.mockRejectedValue(new Error("billing unavailable"));
+
+    await expect(subscriptionService.purchasePackage()).rejects.toThrow("billing unavailable");
+  });
+
   it("getMonthlyPriceString returns the package price", async () => {
     mockedPurchases.getOfferings.mockResolvedValue({
       current: { monthly: { product: { priceString: "US$ 9.99" } } },

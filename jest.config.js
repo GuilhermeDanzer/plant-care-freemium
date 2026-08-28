@@ -13,6 +13,11 @@
 module.exports = {
   preset: "jest-expo",
 
+  // The app logs expected network/database failures via console.warn/error
+  // (that logging is correct in production). Silence it during tests so the
+  // `npm test` output shows only the pass/fail summary.
+  silent: true,
+
   // Global environment setup (Reanimated/AsyncStorage mocks etc.).
   setupFiles: ["<rootDir>/jest.setup.js"],
 

@@ -46,4 +46,9 @@ describe("weatherService.getCurrentWeather", () => {
       })
     );
   });
+
+  it("rejects when the API call fails (caller decides how to surface it)", async () => {
+    mockedGet.mockRejectedValue(new Error("network down"));
+    await expect(weatherService.getCurrentWeather(1, 2)).rejects.toThrow("network down");
+  });
 });

@@ -3,6 +3,8 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   care_streak INTEGER DEFAULT 0,
   last_action_date TIMESTAMP WITH TIME ZONE,
+  ai_credits INTEGER DEFAULT 0,
+  is_premium BOOLEAN DEFAULT false,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -16,8 +18,10 @@ CREATE TABLE IF NOT EXISTS public.plants (
   watering_freq_days INTEGER NOT NULL,
   last_watered_at TIMESTAMP WITH TIME ZONE NOT NULL,
   next_watering_at TIMESTAMP WITH TIME ZONE NOT NULL,
-  image_url TEXT,
+  image_uri TEXT,
+  last_health_check_at TIMESTAMP WITH TIME ZONE,
   health_data JSONB,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   deleted_at TIMESTAMP WITH TIME ZONE
 );
@@ -86,23 +90,23 @@ CREATE POLICY "Users can delete own journal entries"
   ON public.journal_entries FOR DELETE 
   USING (auth.uid() = user_id);
 
--- Storage bucket for user media (if not exists)
+-- Storage bucket for plant images (if not exists)
 INSERT INTO storage.buckets (id, name, public) 
-VALUES ('user_media', 'user_media', true)
+VALUES ('plant-images', 'plant-images', true)
 ON CONFLICT (id) DO NOTHING;
 
 CREATE POLICY "Users can upload their own media"
   ON storage.objects FOR INSERT
-  WITH CHECK (bucket_id = 'user_media' AND auth.uid()::text = (storage.foldername(name))[1]);
+  WITH CHECK (bucket_id = 'plant-images' AND auth.uid()::text = (storage.foldername(name))[1]);
 
 CREATE POLICY "Users can update their own media"
   ON storage.objects FOR UPDATE
-  USING (bucket_id = 'user_media' AND auth.uid()::text = (storage.foldername(name))[1]);
+  USING (bucket_id = 'plant-images' AND auth.uid()::text = (storage.foldername(name))[1]);
 
 CREATE POLICY "Users can delete their own media"
   ON storage.objects FOR DELETE
-  USING (bucket_id = 'user_media' AND auth.uid()::text = (storage.foldername(name))[1]);
+  USING (bucket_id = 'plant-images' AND auth.uid()::text = (storage.foldername(name))[1]);
 
 CREATE POLICY "Media is publically accessible"
   ON storage.objects FOR SELECT
-  USING (bucket_id = 'user_media');
+  USING (bucket_id = 'plant-images');

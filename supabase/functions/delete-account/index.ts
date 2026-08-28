@@ -10,7 +10,7 @@ import { withSupabase } from "@supabase/server"
  *   an unauthenticated request never reaches the deletion logic.
  * - The user's rows in `profiles`, `plants` and `journal_entries` are removed
  *   automatically by the `ON DELETE CASCADE` foreign keys on `auth.users(id)`.
- * - Their media objects under `user_media/{userId}/...` are removed explicitly
+ * - Their media objects under `plant-images/{userId}/...` are removed explicitly
  *   (storage does not cascade).
  */
 export default {
@@ -20,10 +20,10 @@ export default {
       return Response.json({ error: "unauthorized" }, { status: 401 })
     }
 
-    const bucket = ctx.supabaseAdmin.storage.from("user_media")
+    const bucket = ctx.supabaseAdmin.storage.from("plant-images")
 
     /**
-     * Recursively collects the object keys under `user_media/{userId}/...` so
+     * Recursively collects the object keys under `plant-images/{userId}/...` so
      * they can be removed in a single `remove(paths)` call.
      */
     const collectPaths = async (prefix: string): Promise<string[]> => {

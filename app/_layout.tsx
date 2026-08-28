@@ -41,6 +41,13 @@ const configureRevenueCat = (): boolean => {
   }
 };
 
+// Configure RevenueCat at module scope so it is initialized *before* useAuth's
+// effect can issue any Purchases.* call (logIn / getCustomerInfo). Without this,
+// a cached Supabase session makes useAuth call Purchases.logIn before
+// Purchases.configure has run, which throws a native NSException and crashes
+// the app (SIGABRT) on the new architecture.
+const revenueCatConfigured = configureRevenueCat();
+
 export default function RootLayout() {
   useAuth();
 
@@ -54,8 +61,7 @@ export default function RootLayout() {
     };
     initializeApp();
 
-    const configured = configureRevenueCat();
-    if (!configured) return;
+    if (!revenueCatConfigured) return;
 
     const updateListener = (info: any) => {
       try {
@@ -141,6 +147,7 @@ export default function RootLayout() {
               screenOptions={{ headerShown: false }}
             >
               <Stack.Screen name="index" />
+              <Stack.Screen name="onboarding" />
               <Stack.Screen name="(main)" />
               <Stack.Screen name="(identify)" />
               <Stack.Screen name="paywall" options={{ presentation: "modal" }} />

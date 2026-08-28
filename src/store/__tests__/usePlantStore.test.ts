@@ -66,6 +66,7 @@ const resetState = () =>
     lastSyncedAt: null,
     totalFreeScansUsed: 0,
     monthlyPremiumScansUsed: 0,
+    error: null,
   });
 
 const samplePlant = (overrides: Partial<PlantRecord> = {}): PlantRecord => ({
@@ -189,5 +190,52 @@ describe("usePlantStore", () => {
     usePlantStore.getState().clearGarden();
     expect(usePlantStore.getState().plants).toEqual([]);
     expect(db.clearAllLocalData).not.toHaveBeenCalled();
+  });
+
+  it("loadPlants does not throw on a SQLite failure and surfaces an error", async () => {
+    (db.getMyPlants as jest.Mock).mockRejectedValue(new Error("disk I/O error"));
+    await expect(usePlantStore.getState().loadPlants()).resolves.toBeUndefined();
+    const s = usePlantStore.getState();
+    expect(s.hasLoaded).toBe(true);
+    expect(s.isLoading).toBe(false);
+    expect(s.error).toBe("disk I/O error");
+  });
+
+  it("addPlant returns false (no throw) when the insert fails", async () => {
+    (db.insertPlant as jest.Mock).mockRejectedValue(new Error("db locked"));
+    await expect(
+      usePlantStore.getState().addPlant({
+        nickname: "Rex",
+        original_name: "Monstera",
+        scientific_name: "Monstera deliciosa",
+        watering_freq_days: 7,
+      } as any)
+    ).resolves.toBe(false);
+  });
+
+  it("waterPlant returns false (no throw) when marking watered fails", async () => {
+    (db.markWateredAt as jest.Mock).mockRejectedValue(new Error("db failure"));
+    await expect(usePlantStore.getState().waterPlant("p1")).resolves.toBe(false);
+  });
+
+  it("deletePlant returns false (no throw) when the local delete fails", async () => {
+    usePlantStore.setState({ plants: [samplePlant()] });
+    (db.deletePlantById as jest.Mock).mockRejectedValue(new Error("db failure"));
+    await expect(usePlantStore.getState().deletePlant("p1")).resolves.toBe(false);
+  });
+
+  it("checkHealth returns null when the AI assessment fails", async () => {
+    usePlantStore.setState({ isPremium: true });
+    (plantService.assessPlantHealth as jest.Mock).mockRejectedValue(new Error("network"));
+    await expect(
+      usePlantStore.getState().checkHealth("p1", ["file://x.jpg"])
+    ).resolves.toBeNull();
+  });
+
+  it("getJournalForPlant returns [] when the journal query fails", async () => {
+    (db.getJournalEntriesForPlant as jest.Mock).mockRejectedValue(new Error("db failure"));
+    await expect(
+      usePlantStore.getState().getJournalForPlant("p1")
+    ).resolves.toEqual([]);
   });
 });

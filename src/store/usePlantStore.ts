@@ -37,13 +37,15 @@ interface PlantStoreState {
   lastSyncedAt: Date | null;
   totalFreeScansUsed: number;
   monthlyPremiumScansUsed: number;
+  /** Last error message from a failed load/sync — lets the UI surface failures. */
+  error: string | null;
 
   loadPlants: (options?: { showLoading?: boolean }) => Promise<void>;
   addPlant: (payload: InsertPlantInput) => Promise<boolean>;
-  deletePlant: (plantId: string) => Promise<void>;
-  waterPlant: (plantId: string) => Promise<void>;
-  snoozePlant: (plantId: string) => Promise<void>;
-  updatePlant: (plantId: string, data: UpdatePlantInput) => Promise<void>;
+  deletePlant: (plantId: string) => Promise<boolean>;
+  waterPlant: (plantId: string) => Promise<boolean>;
+  snoozePlant: (plantId: string) => Promise<boolean>;
+  updatePlant: (plantId: string, data: UpdatePlantInput) => Promise<boolean>;
   checkHealth: (
     plantId: string,
     imageUris: string[]
@@ -83,6 +85,7 @@ export const usePlantStore = create<PlantStoreState>()(
   lastSyncedAt: null,
   totalFreeScansUsed: 0,
   monthlyPremiumScansUsed: 0,
+  error: null,
 
   loadPlants: async (options) => {
     const showLoading = options?.showLoading ?? true;
@@ -90,7 +93,10 @@ export const usePlantStore = create<PlantStoreState>()(
 
     try {
       const plants = await getMyPlants();
-      set({ plants, hasLoaded: true });
+      set({ plants, hasLoaded: true, error: null });
+    } catch (e) {
+      console.warn("[usePlantStore.loadPlants] Falha ao carregar plantas.", e);
+      set({ hasLoaded: true, error: e instanceof Error ? e.message : "unknown" });
     } finally {
       if (showLoading) set({ isLoading: false });
     }
@@ -98,58 +104,87 @@ export const usePlantStore = create<PlantStoreState>()(
 
   addPlant: async (payload) => {
     // Ticket 2: Removed FREE_PLANT_LIMIT for manual additions
-    await insertPlant(payload);
-    await get().loadPlants({ showLoading: false });
-    await get().syncDataWithSupabase();
-    return true;
+    try {
+      await insertPlant(payload);
+      await get().loadPlants({ showLoading: false });
+      await get().syncDataWithSupabase();
+      return true;
+    } catch (e) {
+      console.warn("[usePlantStore.addPlant] Falha ao adicionar planta.", e);
+      return false;
+    }
   },
 
   deletePlant: async (plantId) => {
-    // A) Remote Delete: Trigger Supabase remote deletion FIRST
     try {
-      await supabase.from("plants").delete().eq("id", plantId);
-    } catch (e) {
-      console.warn("[deletePlant] Failed remote delete:", e);
-    }
-
-    // B) SQLite deletion: Hard delete locally
-    await deletePlantById(plantId);
-
-    // C) FileSystem local image deletion
-    const plant = get().plants.find((p) => p.id === plantId);
-    if (plant?.image_uri && plant.image_uri.startsWith("file://")) {
+      // A) Remote Delete: Trigger Supabase remote deletion FIRST
       try {
-        await FileSystem.deleteAsync(plant.image_uri, { idempotent: true });
+        await supabase.from("plants").delete().eq("id", plantId);
       } catch (e) {
-        console.warn("[deletePlant] Falha ao deletar imagem local:", e);
+        console.warn("[deletePlant] Failed remote delete:", e);
       }
+
+      // B) SQLite deletion: Hard delete locally
+      await deletePlantById(plantId);
+
+      // C) FileSystem local image deletion
+      const plant = get().plants.find((p) => p.id === plantId);
+      if (plant?.image_uri && plant.image_uri.startsWith("file://")) {
+        try {
+          await FileSystem.deleteAsync(plant.image_uri, { idempotent: true });
+        } catch (e) {
+          console.warn("[deletePlant] Falha ao deletar imagem local:", e);
+        }
+      }
+
+      // D) State Eradication: Update local state array to reflect the UI
+      set((state) => ({
+        plants: state.plants.filter((p) => p.id !== plantId),
+      }));
+
+      // Trigger sync
+      await get().syncDataWithSupabase();
+      return true;
+    } catch (e) {
+      console.warn("[usePlantStore.deletePlant] Falha ao deletar planta.", e);
+      return false;
     }
-
-    // D) State Eradication: Update local state array to reflect the UI
-    set((state) => ({
-      plants: state.plants.filter((p) => p.id !== plantId),
-    }));
-
-    // Trigger sync
-    await get().syncDataWithSupabase();
   },
 
   waterPlant: async (plantId) => {
-    await markWateredAt(plantId, new Date());
-    await get().loadPlants({ showLoading: false });
-    await get().syncDataWithSupabase();
+    try {
+      await markWateredAt(plantId, new Date());
+      await get().loadPlants({ showLoading: false });
+      await get().syncDataWithSupabase();
+      return true;
+    } catch (e) {
+      console.warn("[usePlantStore.waterPlant] Falha ao regar planta.", e);
+      return false;
+    }
   },
 
   snoozePlant: async (plantId) => {
-    await snoozeWateringAt(plantId, 2);
-    await get().loadPlants({ showLoading: false });
-    await get().syncDataWithSupabase();
+    try {
+      await snoozeWateringAt(plantId, 2);
+      await get().loadPlants({ showLoading: false });
+      await get().syncDataWithSupabase();
+      return true;
+    } catch (e) {
+      console.warn("[usePlantStore.snoozePlant] Falha ao adiar rega.", e);
+      return false;
+    }
   },
 
   updatePlant: async (plantId, data) => {
-    await updatePlantRecord(plantId, data);
-    await get().loadPlants({ showLoading: false });
-    await get().syncDataWithSupabase();
+    try {
+      await updatePlantRecord(plantId, data);
+      await get().loadPlants({ showLoading: false });
+      await get().syncDataWithSupabase();
+      return true;
+    } catch (e) {
+      console.warn("[usePlantStore.updatePlant] Falha ao atualizar planta.", e);
+      return false;
+    }
   },
 
   checkHealth: async (plantId, imageUris) => {
@@ -170,17 +205,30 @@ export const usePlantStore = create<PlantStoreState>()(
   },
 
   addJournalEntry: async (plantId, imageUri, note) => {
-    await insertJournalEntry(plantId, imageUri, note || null);
-    await get().syncDataWithSupabase();
+    try {
+      await insertJournalEntry(plantId, imageUri, note || null);
+      await get().syncDataWithSupabase();
+    } catch (e) {
+      console.warn("[usePlantStore.addJournalEntry] Falha ao adicionar diário.", e);
+    }
   },
 
   deleteJournalEntry: async (id) => {
-    await deleteJournalEntry(id);
-    await get().syncDataWithSupabase();
+    try {
+      await deleteJournalEntry(id);
+      await get().syncDataWithSupabase();
+    } catch (e) {
+      console.warn("[usePlantStore.deleteJournalEntry] Falha ao deletar diário.", e);
+    }
   },
 
   getJournalForPlant: async (plantId) => {
-    return await getJournalEntriesForPlant(plantId);
+    try {
+      return await getJournalEntriesForPlant(plantId);
+    } catch (e) {
+      console.warn("[usePlantStore.getJournalForPlant] Falha ao carregar diário.", e);
+      return [];
+    }
   },
 
   // Setter puro. O RevenueCat é a fonte da verdade — o listener global em

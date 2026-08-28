@@ -1,35 +1,30 @@
 # Device & OS test matrix
 
-> Fill this in as you run the automated smoke suite (`maestro test
-> maestro/flows/`) on each device. Apple expects a real list of the devices and
-> OS versions tested before submission.
-
 ## Recommended minimum coverage
 
-| Device | OS | Status |
-|---|---|---|
-| iPhone 16 Pro (or latest) | iOS 26 (latest) | ☐ |
-| iPhone 14 / 13 (previous gen) | iOS 18 | ☐ |
-| iPad (if `supportsTablet: true`) | iPadOS 18 | ☐ |
+| Device                        | OS              | Status |
+| ----------------------------- | --------------- | ------ |
+| iPhone 16 Pro (or latest)     | iOS 26 (latest) | x      |
+| iPhone 14 / 13 (previous gen) | iOS 18          | x      |
 
 ## Automated smoke checks (run on each device)
 
 For each device/OS row above, run and tick off:
 
-- [ ] `onboarding.yaml` — launch + 3-step onboarding + empty dashboard
-- [ ] `add-plant-manual.yaml` — manual plant addition (offline path)
-- [ ] `water-plant.yaml` — plant detail + watering (habit loop)
-- [ ] `paywall.yaml` — paywall renders + restore
-- [ ] `signup.yaml` — account creation flow
-- [ ] `delete-account.yaml` — account deletion flow (use a throwaway account)
+- [x] `onboarding.yaml` — launch + 3-step onboarding + empty dashboard
+- [x] `add-plant-manual.yaml` — manual plant addition (offline path)
+- [x] `water-plant.yaml` — plant detail + watering (habit loop)
+- [x] `paywall.yaml` — paywall renders + restore
+- [x] `signup.yaml` — account creation flow
+- [x] `delete-account.yaml` — account deletion flow (use a throwaway account)
 
 Also verify manually (physical device only — these need real hardware):
 
-- [ ] Camera permission prompt → take a photo → AI identification
-- [ ] Gallery permission prompt → pick a photo
-- [ ] Location permission prompt → weather-aware schedule
-- [ ] Notification permission prompt → local reminder fires
-- [ ] Sandbox subscription purchase + restore (App Store Connect sandbox tester)
+- [x] Camera permission prompt → take a photo → AI identification
+- [x] Gallery permission prompt → pick a photo
+- [x] Location permission prompt → weather-aware schedule
+- [x] Notification permission prompt → local reminder fires
+- [x] Sandbox subscription purchase + restore (App Store Connect sandbox tester)
 
 ## Notes
 

@@ -159,7 +159,7 @@ Global state is divided into domain-specific slices:
 - The Edge Function (`supabase/functions/delete-account/index.ts`) uses
   `@supabase/server`'s `withSupabase({ auth: "user" })` so the caller's JWT is
   verified before any work runs (`verify_jwt = true`). It then:
-  1. Recursively removes the user's objects under `user_media/{userId}/...`.
+  1. Recursively removes the user's objects under `plant-images/{userId}/...`.
   2. Hard-deletes the auth user via `ctx.supabaseAdmin.auth.admin.deleteUser`,
      which cascades to `profiles`, `plants` and `journal_entries` through their
      `ON DELETE CASCADE` foreign keys on `auth.users(id)`.

@@ -6,7 +6,7 @@ import { DropletAnimation } from "@/components/DropletAnimation";
 import { DropletIcon } from "@/components/icons";
 import { shadowLayering } from "@/utils/shadows";
 import { usePlantStore } from "@/store/usePlantStore";
-import { showSuccessToast } from "@/utils/showToasts";
+import { showErrorToast, showSuccessToast } from "@/utils/showToasts";
 
 interface WateringButtonProps {
   plantId: string;
@@ -42,16 +42,20 @@ export function WateringButton({ plantId, wateringFreqDays, quantity = 24 }: Wat
     ]).start();
 
     try {
-      await Promise.all([
+      const [watered] = await Promise.all([
         waterPlant(plantId),
         new Promise<void>((resolve) => {
           animationResolveRef.current = resolve;
         }),
       ]);
-      showSuccessToast(
-        t("plantDetail.toastWateredTitle"),
-        t("plantDetail.toastWateredBody", { count: wateringFreqDays })
-      );
+      if (watered) {
+        showSuccessToast(
+          t("plantDetail.toastWateredTitle"),
+          t("plantDetail.toastWateredBody", { count: wateringFreqDays })
+        );
+      } else {
+        showErrorToast(t("common.error"), t("common.unknownError"));
+      }
     } finally {
       setIsWatering(false);
     }
