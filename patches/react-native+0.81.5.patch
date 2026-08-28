@@ -1,0 +1,20 @@
+diff --git a/node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios/ReactCommon/RCTTurboModule.mm b/node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios/ReactCommon/RCTTurboModule.mm
+index 2a67797..7cacabf 100644
+--- a/node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios/ReactCommon/RCTTurboModule.mm
++++ b/node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios/ReactCommon/RCTTurboModule.mm
+@@ -435,7 +435,14 @@ TraceSection s(
+     @try {
+       [inv invokeWithTarget:strongModule];
+     } @catch (NSException *exception) {
+-      throw convertNSExceptionToJSError(runtime, exception, std::string{moduleName}, methodNameStr);
++      // PATCHED (plant-care-freemium): Suppress the NSException in void TurboModule
++      // methods instead of converting it to a JS error. On iOS 26 (A18 Pro devices),
++      // convertNSExceptionToJSError corrupts the Hermes heap (SIGSEGV in
++      // HiddenClass::addProperty) because it runs concurrently with the JS thread.
++      // See: https://github.com/reactwg/react-native-new-architecture/discussions/276
++      //      https://github.com/facebook/react-native/issues/55337
++      RCTLogError(@"[TurboModule] Exception in void method %s.%s: %@", moduleName, methodName, exception);
++      return;
+     } @finally {
+       [retainedObjectsForInvocation removeAllObjects];
+     }
