@@ -52,3 +52,9 @@ yarn-error.*
 # build artifacts
 *.ipa
 
+# stray files not intended for the repo
+/icon.png
+
+# App Review credentials are never committed
+docs/app-store/test-credentials.md
+

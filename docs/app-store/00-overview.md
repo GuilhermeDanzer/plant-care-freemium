@@ -10,7 +10,7 @@ permissions.
 | 1 | Screen recording on a physical device | `app-review-demo-script.md` (+ `../../maestro/flows/app-review-demo.yaml` for rehearsal) |
 | 2 | Devices & OS tested | `device-test-matrix.md` |
 | 3 | Functions & target audience | `app-description.md` |
-| 4 | Setup instructions, credentials, samples | `test-credentials.md` |
+| 4 | Setup instructions, credentials, samples | `test-credentials.example.md` (real values are not committed) |
 | 5 | External services / tools / platforms | `external-services.md` |
 | 6 | Regional differences | `regional-support.md` |
 | 7 | Regulated industry / protected material | `regulated-industry.md` |

@@ -14,8 +14,8 @@ import { readFileSync, existsSync } from "node:fs";
 import { createClient } from "@supabase/supabase-js";
 import { randomUUID } from "node:crypto";
 
-const DEMO_EMAIL = "appreview@planthelper.app";
-const DEMO_PASSWORD = "YOUR_DEMO_PASSWORD";
+const DEMO_EMAIL = process.env.DEMO_EMAIL ?? "appreview@planthelper.app";
+const DEMO_PASSWORD = process.env.DEMO_PASSWORD;
 
 // Minimal .env loader (no dependency on dotenv).
 function loadEnv() {
@@ -41,6 +41,15 @@ const anon = process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 if (!url || !anon) {
   console.error(
     "Missing EXPO_PUBLIC_SUPABASE_URL / EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY."
+  );
+  process.exit(1);
+}
+
+if (!DEMO_PASSWORD) {
+  console.error(
+    "DEMO_PASSWORD is not set. Provide it via the environment, e.g.:\n" +
+      "  DEMO_PASSWORD='...' node scripts/create-demo-account.mjs\n" +
+      "Never commit real credentials to the repository.",
   );
   process.exit(1);
 }

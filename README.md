@@ -7,7 +7,19 @@ Built with Expo SDK 54 / React Native 0.81, TypeScript, Zustand + TanStack
 Query, NativeWind, Expo SQLite, Supabase, RevenueCat, and the Kindwise
 (Plant.id) + OpenWeatherMap APIs.
 
+## Who it's for
+
+- **Plant owners** who want to identify plants, track watering schedules, and
+  get an AI health diagnosis — with the core flow usable offline.
+- **Hobbyist gardeners** juggling many plants who need per-plant reminders,
+  streaks, and care history.
+- **Developers** looking at a production-shaped Expo / React Native app with a
+  Supabase backend, RevenueCat paywall, local-first SQLite storage, i18n, and a
+  real Jest + Maestro test suite.
+
 ## Quick start
+
+Requirements: Node.js 22 (LTS) and npm.
 
 ```bash
 npm install --legacy-peer-deps
@@ -51,3 +63,14 @@ review notes.
 
 - [`ARCHITECTURE.md`](ARCHITECTURE.md) — technical architecture
 - [`FEATURES.md`](FEATURES.md) — feature inventory & status
+- [`ROADMAP.md`](ROADMAP.md) — planned work and known gaps
+
+## Roadmap
+
+See [`ROADMAP.md`](ROADMAP.md) for the full backlog and the matching GitHub
+issues. Highlights: moving the Plant.id key behind a Supabase Edge Function,
+offline scan retry queue, garden backup/export, and more locales.
+
+## License
+
+[MIT](LICENSE) © 2026 Guilherme Danzer de Oliveira

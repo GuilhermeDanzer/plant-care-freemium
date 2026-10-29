@@ -87,6 +87,7 @@ A drop-in rehearsal is available as a Maestro flow:
 ---
 
 ## Notes for the reviewer
-- Use the demo account from `test-credentials.md` for login/restore demos.
+- Use the demo account (see `test-credentials.example.md` — fill in your own
+  values) for login/restore demos.
 - Subscription: use an App Store Connect **sandbox tester** so no real charge
   occurs; note this in `apple-review-notes.md`.
